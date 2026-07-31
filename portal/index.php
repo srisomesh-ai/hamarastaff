@@ -89,7 +89,7 @@ async function doLogin(){
    if(j.error&&j.error.length>30)return fail(j.error);
    return fail('Invalid username or password');
   }
-  location.href = role==='admin' ? 'admin.html' : 'app.html';
+  location.replace(role==='admin' ? 'admin.html' : 'app.html');
  }catch(e){fail('Server error \u2014 please try again')}
 }
 document.getElementById('p').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
