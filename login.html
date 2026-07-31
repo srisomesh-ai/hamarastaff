@@ -68,10 +68,10 @@ label{display:block;font-size:11.5px;font-weight:800;color:var(--sub);text-trans
   <a class="back" href="/">‹ Back to website</a>
   <div class="em">🏢</div>
   <h1>Client Login</h1>
-  <p class="sub">Enter your <b>company or institute code</b> in capital letters — as given by HamaraStaff. Example: <b style="color:var(--teal)">MEDCY</b></p>
+  <p class="sub">Enter your <b>company or institute code</b> in capital letters, exactly as provided to you by HamaraStaff.</p>
   <label for="code">Company Code</label>
   <div class="codewrap">
-   <input id="code" placeholder="MEDCY" maxlength="20" autocomplete="off" autofocus
+   <input id="code" placeholder="COMPANY CODE" maxlength="20" autocomplete="off" autofocus
      oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');preview()"
      onkeydown="if(event.key==='Enter')goPortal()">
   </div>

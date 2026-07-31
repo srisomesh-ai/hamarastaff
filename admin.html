@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Owner Panel — HamaraStaff</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#0E6B63;--teal-dark:#083D38;--teal-mid:#12857B;--soft:#E3F0EE;--ink:#13211F;--sub:#5B6E6B;--line:#E2EAE8;--red:#B3261E;--green:#1E7B34;--green-soft:#E3F3E7;--amber:#C77800;--amber-soft:#FFF3E0}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Manrope',sans-serif;background:#F4F8F7;color:var(--ink);min-height:100vh}
+.num{font-family:'Space Grotesk',monospace}
+button{font-family:inherit;cursor:pointer;border:none}
+input,select{font-family:inherit;font-size:14.5px;width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff}
+input:focus{outline:2px solid var(--teal);border-color:var(--teal)}
+label{display:block;font-size:11.5px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 20px;border-radius:13px;font-size:14px;font-weight:800;transition:.15s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--teal);color:#fff}
+.btn.ghost{background:#fff;border:1.5px solid var(--line);color:var(--ink)}
+.btn.danger{background:#fff;border:1.5px solid #F1D2CF;color:var(--red)}
+.btn[disabled]{opacity:.55;cursor:wait}
+
+/* login */
+#loginScr{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(150deg,var(--teal-dark),var(--teal) 60%,var(--teal-mid));padding:24px}
+.lcard{background:#fff;border-radius:22px;width:100%;max-width:400px;padding:32px;box-shadow:0 24px 60px rgba(6,40,37,.4)}
+.lcard .lg{width:52px;height:52px;border-radius:15px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:14px}
+.lcard h1{font-size:22px;font-weight:800}
+.lcard p{color:var(--sub);font-size:13.5px;margin-top:4px}
+.err{display:none;background:#FBE9E7;color:var(--red);font-size:12.5px;font-weight:700;border-radius:10px;padding:10px 12px;margin-top:14px}
+
+/* shell */
+#panel{display:none}
+.topbar{background:linear-gradient(90deg,var(--teal-dark),var(--teal));color:#fff;padding:16px 0}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.topin{display:flex;align-items:center;gap:12px}
+.topin .lg{width:38px;height:38px;border-radius:11px;background:#fff;color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:19px}
+.topin b{font-size:17px}
+.topin span{font-size:12px;opacity:.85;display:block}
+.topin .out{margin-left:auto;background:rgba(255,255,255,.15);color:#fff;padding:9px 14px;border-radius:10px;font-size:12.5px;font-weight:800}
+.main{padding:30px 0 60px}
+.headrow{display:flex;align-items:center;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.headrow h2{font-size:21px;font-weight:800}
+.headrow .spacer{flex:1}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.client{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;transition:.2s}
+.client:hover{box-shadow:0 14px 34px rgba(14,107,99,.12);transform:translateY(-3px)}
+.client .code{font-family:'Space Grotesk';font-weight:700;font-size:19px;color:var(--teal);letter-spacing:1px}
+.client .nm{font-size:14px;font-weight:700;margin:3px 0 10px}
+.client .st{display:inline-block;font-size:10.5px;font-weight:800;padding:4px 10px;border-radius:99px;margin-bottom:14px}
+.st.ok{background:var(--green-soft);color:var(--green)}
+.st.warn{background:var(--amber-soft);color:var(--amber)}
+.client .acts{display:flex;gap:8px;flex-wrap:wrap}
+.client .acts .btn{padding:9px 13px;font-size:12px;border-radius:10px}
+.empty{background:#fff;border:1.5px dashed var(--line);border-radius:18px;padding:44px;text-align:center;color:var(--sub);font-size:14px}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(16,32,30,.5);display:none;align-items:flex-start;justify-content:center;padding:40px 18px;z-index:50;overflow-y:auto}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:20px;max-width:520px;width:100%;padding:26px;position:relative}
+.modal .x{position:absolute;top:14px;right:16px;font-size:19px;color:var(--sub);font-weight:800;background:none;padding:6px}
+.modal h3{font-size:19px;font-weight:800}
+.chk{display:flex;align-items:center;gap:10px;margin-top:16px;font-size:13.5px;font-weight:700}
+.chk input{width:18px;height:18px}
+.result{display:none;background:var(--soft);border-radius:14px;padding:16px;margin-top:18px;font-size:13px;line-height:1.7}
+.result b{color:var(--teal)}
+.result pre{background:#fff;border-radius:10px;padding:10px;font-size:11.5px;margin-top:8px;white-space:pre-wrap;font-family:'Space Grotesk'}
+.urlprev{font-size:12.5px;color:var(--sub);font-weight:700;margin-top:6px}
+.urlprev b{color:var(--teal);font-family:'Space Grotesk'}
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:700;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+.toast.show{opacity:1}
+.note{background:var(--amber-soft);border-radius:12px;padding:12px 14px;font-size:12.5px;color:var(--amber);font-weight:700;margin-bottom:20px}
+</style>
+</head>
+<body>
+
+<!-- OWNER LOGIN -->
+<div id="loginScr">
+  <div class="lcard">
+    <div class="lg">🗝️</div>
+    <h1>HamaraStaff Owner Panel</h1>
+    <p>Create and manage client portals. Authorized access only.</p>
+    <label>Username</label>
+    <input id="su" autocomplete="username">
+    <label>Password</label>
+    <input id="sp" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')superLogin()">
+    <div class="err" id="lerr"></div>
+    <button class="btn primary" style="width:100%;margin-top:20px" id="lbtn" onclick="superLogin()">Sign In →</button>
+  </div>
+</div>
+
+<!-- PANEL -->
+<div id="panel">
+  <div class="topbar"><div class="wrap topin">
+    <span class="lg">📍</span>
+    <div><b>HamaraStaff</b><span>Owner Panel · Client Management</span></div>
+    <button class="out" onclick="superLogout()">Logout</button>
+  </div></div>
+  <div class="wrap main">
+    <div class="note">💡 Client portals created here live on the server. After creating clients, ask Claude to also commit them to the Git repo so a redeploy never removes them.</div>
+    <div class="headrow">
+      <h2>Client Portals</h2>
+      <div class="spacer"></div>
+      <button class="btn ghost" onclick="loadClients()">↻ Refresh</button>
+      <button class="btn primary" onclick="openCreate()">＋ Create New Client</button>
+    </div>
+    <div class="grid" id="clientGrid"></div>
+  </div>
+</div>
+
+<!-- CREATE MODAL -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="x" onclick="closeModal()">✕</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2800)}
+async function api(action,data={}){
+ const r=await fetch('api/provision.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})});
+ let j=null;try{j=await r.json()}catch(e){}
+ if(!j||!j.ok){
+  if(j&&j.error==='auth'){showLogin();throw new Error('auth')}
+  throw new Error(j&&j.error?j.error:'Server error')
+ }
+ return j.data;
+}
+function showLogin(){$('loginScr').style.display='flex';$('panel').style.display='none'}
+function showPanel(){$('loginScr').style.display='none';$('panel').style.display='block'}
+
+async function boot(){
+ try{await api('me');showPanel();loadClients()}catch(e){showLogin()}
+}
+async function superLogin(){
+ const err=$('lerr'),btn=$('lbtn');
+ err.style.display='none';btn.disabled=true;btn.textContent='Signing in…';
+ try{
+  await api('login',{username:$('su').value.trim(),password:$('sp').value});
+  showPanel();loadClients();
+ }catch(e){
+  err.textContent=e.message==='invalid'?'Invalid username or password':e.message;
+  err.style.display='block';
+ }
+ btn.disabled=false;btn.textContent='Sign In →';
+}
+async function superLogout(){try{await api('logout')}catch(e){}showLogin()}
+
+async function loadClients(){
+ let list=[];
+ try{list=await api('list')}catch(e){if(e.message!=='auth')toast(e.message);return}
+ $('clientGrid').innerHTML=list.length?list.map(c=>`
+  <div class="client">
+   <div class="code">${c.code.toUpperCase()}</div>
+   <div class="nm">${c.name}</div>
+   <span class="st ${c.configured?'ok':'warn'}">${c.configured?'● Live':'● Setup pending (DB config)'}</span>
+   <div class="acts">
+    <a class="btn ghost" href="/${c.code}/" target="_blank">Open Portal</a>
+    <a class="btn ghost" href="/${c.code}/admin.html" target="_blank">Admin Panel</a>
+    <button class="btn danger" onclick="openDelete('${c.code}')">Delete</button>
+   </div>
+  </div>`).join('')
+ :`<div class="empty">No client portals yet.<br>Click <b>＋ Create New Client</b> to add your first one.</div>`;
+}
+
+/* ---- create ---- */
+function openCreate(){
+ $('modalBody').innerHTML=`
+  <h3>Create New Client</h3>
+  <label>Company Code (used in URL & staff IDs)</label>
+  <input id="cCode" placeholder="e.g. APOLLO" maxlength="20" style="text-transform:uppercase;font-family:'Space Grotesk';letter-spacing:2px;font-weight:700"
+   oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');$('cprev').innerHTML='hamarastaff.com/<b>'+this.value.toLowerCase()+'/</b>'">
+  <div class="urlprev" id="cprev">hamarastaff.com/<b>—</b></div>
+  <label>Company / Institute Name</label>
+  <input id="cName" placeholder="e.g. Apollo Hospitals, Vizag">
+  <label>Portal Admin Password (for their management login)</label>
+  <input id="cPass" placeholder="Min 6 characters, e.g. Apollo@2026">
+  <div class="chk"><input type="checkbox" id="cSeed"><label for="cSeed" style="margin:0;text-transform:none;font-size:13.5px;letter-spacing:0">Add 3 demo employees (for giving a demo)</label></div>
+  <button class="btn primary" style="width:100%;margin-top:22px" id="cBtn" onclick="createClient()">Create Portal ✓</button>
+  <div class="result" id="cResult"></div>`;
+ $('overlay').classList.add('show');
+}
+async function createClient(){
+ const code=$('cCode').value.trim().toLowerCase(), name=$('cName').value.trim(), pass=$('cPass').value.trim();
+ const btn=$('cBtn'), res=$('cResult');
+ btn.disabled=true;btn.textContent='Creating portal…';
+ try{
+  const r=await api('create',{code,name,admin_pass:pass,seed_demo:$('cSeed').checked});
+  btn.textContent='Setting up database…';
+  let installOut='';
+  try{installOut=await (await fetch(r.install,{cache:'no-store'})).text()}catch(e){installOut='Could not auto-run install — open '+r.install+' once in your browser.'}
+  res.style.display='block';
+  res.innerHTML=`✅ <b>${code.toUpperCase()}</b> portal created!<br>
+   Portal: <b>hamarastaff.com/${code}/</b><br>
+   Admin login: <b>admin</b> / <b>${pass}</b><br>
+   ${$('cSeed').checked?`Demo staff: <b>${code.toUpperCase()}-1001..1003</b> / <b>${code}@123</b><br>`:''}
+   <pre>${installOut.replace(/</g,'&lt;')}</pre>
+   <a class="btn primary" style="margin-top:8px" href="/${code}/" target="_blank">Open ${code.toUpperCase()} Portal →</a>`;
+  btn.style.display='none';
+  toast('Client created ✓');
+  loadClients();
+ }catch(e){
+  toast(e.message);btn.disabled=false;btn.textContent='Create Portal ✓';
+ }
+}
+
+/* ---- delete ---- */
+function openDelete(code){
+ $('modalBody').innerHTML=`
+  <h3 style="color:var(--red)">Delete ${code.toUpperCase()}?</h3>
+  <p style="font-size:13.5px;color:var(--sub);margin-top:8px;line-height:1.6">This removes the client's portal pages from the website. Their database records (attendance, visits, audit log) are <b>kept</b> for audit purposes.</p>
+  <label>Type the code <b style="color:var(--red)">${code}</b> to confirm</label>
+  <input id="dConfirm" placeholder="${code}" style="font-family:'Space Grotesk'">
+  <button class="btn danger" style="width:100%;margin-top:20px;background:var(--red);color:#fff;border:none" onclick="doDelete('${code}')">Delete Portal Permanently</button>`;
+ $('overlay').classList.add('show');
+}
+async function doDelete(code){
+ try{
+  await api('remove',{code,confirm:$('dConfirm').value.trim().toLowerCase()});
+  closeModal();toast(code.toUpperCase()+' portal deleted');loadClients();
+ }catch(e){toast(e.message)}
+}
+function closeModal(){$('overlay').classList.remove('show')}
+boot();
+</script>
+</body>
+</html>

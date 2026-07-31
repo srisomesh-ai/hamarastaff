@@ -79,14 +79,15 @@ try {
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 
   $n = $db->query("SELECT COUNT(*) c FROM hs_employees")->fetch()['c'];
-  if ($n == 0) {
+  $codebase = strtoupper(rtrim(TP, '_'));
+  if ($n == 0 && defined('SEED_DEMO') && SEED_DEMO) {
     $st = $db->prepare("INSERT INTO hs_employees (emp_code,name,password,area) VALUES (?,?,?,?)");
-    $st->execute(['MEDCY-1001', 'Ravi Kumar',   'medcy@123', 'Dwaraka Nagar']);
-    $st->execute(['MEDCY-1002', 'Priya Sharma', 'medcy@123', 'MVP Colony']);
-    $st->execute(['MEDCY-1003', 'Suresh Babu',  'medcy@123', 'Gajuwaka']);
-    echo "Seeded 3 default employees.\n";
+    $st->execute([$codebase.'-1001', 'Ravi Kumar',   strtolower($codebase).'@123', 'Dwaraka Nagar']);
+    $st->execute([$codebase.'-1002', 'Priya Sharma', strtolower($codebase).'@123', 'MVP Colony']);
+    $st->execute([$codebase.'-1003', 'Suresh Babu',  strtolower($codebase).'@123', 'Gajuwaka']);
+    echo "Seeded 3 demo employees ({$codebase}-1001..1003).\n";
   }
-  echo "✓ MEDCY database installed successfully. All tables ready.\n";
+  echo "✓ " . COMPANY_NAME . " database installed successfully. All tables ready (prefix: " . TP . ").\n";
   echo "Data retention: " . RETENTION_DAYS . " days (audit purpose).\n";
   echo "You can now use the app. You may delete this file if you wish.\n";
 } catch (Exception $e) {

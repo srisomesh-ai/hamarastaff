@@ -174,14 +174,14 @@ case 'task_close': {
   /* backend email to client (Hostinger mail) */
   if(in_array('Email',$in['sent']??[]) && filter_var($t['client_email'],FILTER_VALIDATE_EMAIL)){
     $body="Dear {$t['doctor']},\n\nThank you for your time today. Summary of our visit:\n\n"
-      ."Representative: {$_SESSION['emp_name']} (MEDCY Hospital)\n"
+      ."Representative: {$_SESSION['emp_name']} (".COMPANY_NAME.")\n"
       ."Purpose: {$t['purpose']}\nPerson met: ".($in['met']??'')."\n"
       ."Products discussed: ".implode(', ',$in['products']??[])."\n"
       ."Demo given: ".($in['demo']??'No')."\nSamples: ".(int)($in['samples']??0)."\n"
       ."Remarks: ".($in['remarks']??'')."\n"
       .(!empty($in['next'])?"Next visit: {$in['next']}\n":'')
-      ."\nRegards,\nMEDCY Hospital Field Team";
-    @mail($t['client_email'],'Visit Summary — MEDCY Hospital',$body,
+      ."\nRegards,\n".COMPANY_NAME." Field Team";
+    @mail($t['client_email'],'Visit Summary — '.COMPANY_NAME,$body,
       "From: noreply@hamarastaff.com\r\nReply-To: noreply@hamarastaff.com");
   }
   out(true);
