@@ -1,5 +1,6 @@
 <?php require __DIR__ . '/boot.php'; $CN = htmlspecialchars(COMPANY_NAME);
 if (PLAN === 'trial' && TRIAL_EXPIRED) trial_lock_page($CN);
+if (PLAN !== 'trial' && SUB_EXPIRED) sub_lock_page($CN);
 if (PLAN === 'starter') {
   header('Content-Type: text/html; charset=utf-8');
   echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Upgrade required</title></head>'
@@ -22,7 +23,7 @@ if (PLAN === 'starter') {
 <title><?= $CN ?> — Management Panel</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script>const HS_PLAN='<?= PLAN ?>';const HS_TRIAL_DAYS=<?= (int)TRIAL_DAYS_LEFT ?>;const HS_CODE='<?= CODE ?>';const HS_UPI='srisomeshidfc@ybl';const HS_PAYEE='Hamara Staff';</script>
+<script>const HS_PLAN='<?= PLAN ?>';const HS_TRIAL_DAYS=<?= (int)TRIAL_DAYS_LEFT ?>;const HS_CODE='<?= CODE ?>';const HS_ENDS='<?= PLAN_ENDS !== '' ? date('d M Y', strtotime(PLAN_ENDS)) : '' ?>';const HS_SUB_DAYS=<?= PLAN_ENDS !== '' ? (int)SUB_DAYS_LEFT : -1 ?>;const HS_UPI='srisomeshidfc@ybl';const HS_PAYEE='Hamara Staff';</script>
 <link rel="icon" type="image/png" href="/assets/favicon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -138,6 +139,11 @@ tbody tr.click:hover{background:var(--teal-soft)}
 </style>
 </head>
 <body>
+<?php if (PLAN !== 'trial' && PLAN_ENDS !== '' && !SUB_EXPIRED && SUB_DAYS_LEFT <= 7): ?>
+<div style="background:linear-gradient(90deg,#B3261E,#D9534F);color:#fff;text-align:center;padding:9px 14px;font-size:13px;font-weight:800;font-family:'Manrope',sans-serif">
+&#9203; Your plan expires <?= SUB_DAYS_LEFT<=0 ? 'today' : 'in '.SUB_DAYS_LEFT.' day'.(SUB_DAYS_LEFT>1?'s':'') ?> (<?= date('d M Y', strtotime(PLAN_ENDS)) ?>) &middot; renew from the Plan &amp; Billing section
+</div>
+<?php endif; ?>
 <?php if (PLAN === 'trial' && !TRIAL_EXPIRED): ?>
 <div style="background:linear-gradient(90deg,#C77800,#F0A322);color:#fff;text-align:center;padding:9px 14px;font-size:13px;font-weight:800;font-family:'Manrope',sans-serif">
 &#127873; Free Trial &mdash; <?= TRIAL_DAYS_LEFT<=0 ? 'last day today!' : TRIAL_DAYS_LEFT.' day'.(TRIAL_DAYS_LEFT>1?'s':'').' left' ?>
@@ -493,14 +499,14 @@ function renderBilling(){
   head=`<div class="card"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
    <div style="font-size:30px">📱</div>
    <div style="flex:1"><b style="font-size:16px">Current Plan: ₹150 Starter</b>
-   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app for field staff · ${n} active employee${n!==1?'s':''} · ₹${150*n}/month</div></div>
-   <span class="pill present">✓ Active</span></div></div>`;
+   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app for field staff · ${n} active employee${n!==1?'s':''} · ₹${150*n}/month${HS_ENDS?` · <b style="color:${HS_SUB_DAYS<=7?'var(--red)':'var(--green)'}">Valid till ${HS_ENDS}${HS_SUB_DAYS>=0?' ('+HS_SUB_DAYS+'d left)':''}</b>`:''}</div></div>
+   <span class="pill present">✓ Active</span>${HS_ENDS?`<button class="btn primary" style="padding:9px 14px;font-size:12.5px" onclick="openPay(150,'Starter')">Renew</button>`:''}</div></div>`;
  }else{
   head=`<div class="card"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
    <div style="font-size:30px">🖥️</div>
    <div style="flex:1"><b style="font-size:16px">Current Plan: ₹250 Professional</b>
-   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app + Desktop panel · ${n} active employee${n!==1?'s':''} · ₹${250*n}/month</div></div>
-   <span class="pill present">✓ Active</span></div></div>`;
+   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app + Desktop panel · ${n} active employee${n!==1?'s':''} · ₹${250*n}/month${HS_ENDS?` · <b style="color:${HS_SUB_DAYS<=7?'var(--red)':'var(--green)'}">Valid till ${HS_ENDS}${HS_SUB_DAYS>=0?' ('+HS_SUB_DAYS+'d left)':''}</b>`:''}</div></div>
+   <span class="pill present">✓ Active</span>${HS_ENDS?`<button class="btn primary" style="padding:9px 14px;font-size:12.5px" onclick="openPay(250,'Professional')">Renew</button>`:''}</div></div>`;
  }
  el.innerHTML=head;
  const plan=(rate,title,desc,feats,active)=>`

@@ -160,7 +160,7 @@ async function loadClients(){
     ${c.logo?`<img src="${c.logo}?v=${Date.now()}" style="width:46px;height:46px;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:#fff;padding:4px">`:`<div style="width:46px;height:46px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:22px">🏢</div>`}
     <div><div class="code">${c.code.toUpperCase()}</div><div class="nm" style="margin:0">${c.name}</div></div>
    </div>
-   <span class="st ok">● Live</span> <span class="st" style="background:${c.plan==='trial'?(c.days<0?'#FBE9E7':'var(--amber-soft)'):c.plan==='starter'?'var(--amber-soft)':'var(--soft)'};color:${c.plan==='trial'?(c.days<0?'var(--red)':'var(--amber)'):c.plan==='starter'?'var(--amber)':'var(--teal)'}">${c.plan==='trial'?(c.days<0?'⏳ Trial EXPIRED':'🎁 Trial · '+(c.days===0?'last day':c.days+'d left')):c.plan==='starter'?'₹150 Starter · Mobile only':'₹250 Professional'}</span>
+   <span class="st ok">● Live</span> <span class="st" style="background:${c.plan==='trial'?(c.days<0?'#FBE9E7':'var(--amber-soft)'):c.plan==='starter'?'var(--amber-soft)':'var(--soft)'};color:${c.plan==='trial'?(c.days<0?'var(--red)':'var(--amber)'):c.plan==='starter'?'var(--amber)':'var(--teal)'}">${c.plan==='trial'?(c.days<0?'⏳ Trial EXPIRED':'🎁 Trial · '+(c.days===0?'last day':c.days+'d left')):(c.plan==='starter'?'₹150 Starter':'₹250 Professional')+(c.ends?(c.days<0?' · EXPIRED '+c.ends:' · till '+c.ends+' ('+c.days+'d)'):'')}</span>
    ${c.email?`<div style="font-size:11.5px;color:var(--sub);font-weight:700;margin-top:6px">✉️ ${c.email}</div>`:''}
    <div class="acts">
     <a class="btn ghost" href="/${c.code}/" target="_blank">Open Portal</a>
@@ -168,7 +168,8 @@ async function loadClients(){
     <button class="btn ghost" onclick="pickLogo('${c.code}')">${c.logo?'Change Logo':'Set Logo'}</button>
     ${c.plan==='trial'?`<button class="btn primary" style="padding:9px 13px;font-size:12px;border-radius:10px" onclick="activate('${c.code}','professional')">Activate ₹250</button>
     <button class="btn ghost" onclick="activate('${c.code}','starter')">Activate ₹150</button>`
-    :`<button class="btn ghost" onclick="changePlan('${c.code}','${c.plan}')">${c.plan==='starter'?'Upgrade to ₹250':'Downgrade to ₹150'}</button>`}
+    :`<button class="btn primary" style="padding:9px 13px;font-size:12px;border-radius:10px" onclick="extendClient('${c.code}')">＋ Extend Validity</button>
+    <button class="btn ghost" onclick="changePlan('${c.code}','${c.plan}')">${c.plan==='starter'?'Upgrade to ₹250':'Downgrade to ₹150'}</button>`}
     <button class="btn danger" onclick="openDelete('${c.code}')">Delete</button>
    </div>
   </div>`).join('')
@@ -260,8 +261,16 @@ async function changePlan(code,cur){
  try{await api('set_plan',{code,plan:to});toast('Plan updated ✓');loadClients()}catch(e){toast(e.message)}
 }
 async function activate(code,plan){
- if(!confirm('Activate '+code.toUpperCase()+' on the '+(plan==='starter'?'₹150 Starter':'₹250 Professional')+' plan? The trial banner will disappear and their account continues without expiry.'))return;
- try{await api('set_plan',{code,plan});toast(code.toUpperCase()+' activated on '+(plan==='starter'?'₹150':'₹250')+' plan ✓');loadClients()}catch(e){toast(e.message)}
+ const m=prompt('Activate '+code.toUpperCase()+' on the '+(plan==='starter'?'₹150 Starter':'₹250 Professional')+' plan.\n\nHow many months has the client paid for?','1');
+ if(m===null)return;
+ const months=parseInt(m)||1;
+ try{const r=await api('set_plan',{code,plan,months});toast(code.toUpperCase()+' activated ✓ valid till '+r.ends);loadClients()}catch(e){toast(e.message)}
+}
+async function extendClient(code){
+ const m=prompt('Extend validity for '+code.toUpperCase()+' after payment confirmation.\n\nHow many months to add?','1');
+ if(m===null)return;
+ const months=parseInt(m)||1;
+ try{const r=await api('extend',{code,months});toast(code.toUpperCase()+' extended ✓ now valid till '+r.ends);loadClients()}catch(e){toast(e.message)}
 }
 function closeModal(){$('overlay').classList.remove('show')}
 boot();

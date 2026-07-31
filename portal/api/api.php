@@ -17,6 +17,9 @@ $action = $in['action'] ?? '';
 if (PLAN === 'trial' && TRIAL_EXPIRED && $action !== 'logout') {
   fail('Your 7-day free trial has ended. Email info@hamarastaff.com to activate your account and continue.', 402);
 }
+if (PLAN !== 'trial' && SUB_EXPIRED && $action !== 'logout') {
+  fail('Your plan expired on ' . date('d M Y', strtotime(PLAN_ENDS)) . '. Pay via UPI to Hamara Staff (srisomeshidfc@ybl) and email the screenshot to info@hamarastaff.com to renew.', 402);
+}
 
 try { $db = db(); } catch (Exception $e) { fail('Database not configured. Open api/install.php after filling config.php.', 500); }
 

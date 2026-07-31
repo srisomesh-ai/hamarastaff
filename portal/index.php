@@ -1,5 +1,6 @@
 <?php require __DIR__ . '/boot.php'; $CN = htmlspecialchars(COMPANY_NAME);
-if (PLAN === 'trial' && TRIAL_EXPIRED) trial_lock_page($CN); ?>
+if (PLAN === 'trial' && TRIAL_EXPIRED) trial_lock_page($CN);
+if (PLAN !== 'trial' && SUB_EXPIRED) sub_lock_page($CN); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

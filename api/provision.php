@@ -57,12 +57,16 @@ function clientList($CLIENTS){
     if(preg_match("/define\('COMPANY_NAME',\s*'((?:[^'\\\\]|\\\\.)*)'\)/",$cfg,$m)) $name=stripslashes($m[1]);
     $plan='professional';
     if(preg_match("/define\('PLAN',\s*'([a-z]+)'\)/",$cfg,$pm)) $plan=$pm[1];
-    $days=null;
+    $days=null; $ends=null;
     if($plan==='trial' && preg_match("/define\('TRIAL_ENDS',\s*'([0-9-]+)'\)/",$cfg,$tm))
       $days=(int)floor((strtotime($tm[1])-strtotime(date('Y-m-d')))/86400);
+    if($plan!=='trial' && preg_match("/define\('PLAN_ENDS',\s*'([0-9-]+)'\)/",$cfg,$pe)){
+      $ends=$pe[1];
+      $days=(int)floor((strtotime($ends)-strtotime(date('Y-m-d')))/86400);
+    }
     $email=null;
     if(preg_match("/define\('TRIAL_EMAIL',\s*'((?:[^'\\\\]|\\\\.)*)'\)/",$cfg,$em)) $email=stripslashes($em[1]);
-    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'email'=>$email,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
+    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'ends'=>$ends,'email'=>$email,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
   }
   return $list;
 }
@@ -117,13 +121,38 @@ case 'set_plan': {
   requireSuper();
   $code=strtolower(trim($in['code']??''));
   $plan=($in['plan']??'')==='starter'?'starter':'professional';
+  $months=max(0,min(36,(int)($in['months']??0)));
   $f="$CLIENTS/$code.php";
   if(!file_exists($f)) fail('Client not found',404);
   $cfg=file_get_contents($f);
   if(preg_match("/define\('PLAN',/",$cfg)) $cfg=preg_replace("/define\('PLAN',\s*'[a-z]+'\);/","define('PLAN', '".$plan."');",$cfg);
   else $cfg.="define('PLAN', '".$plan."');\n";
+  $ends=null;
+  if($months>0){
+    $base=date('Y-m-d');
+    if(preg_match("/define\('PLAN_ENDS',\s*'([0-9-]+)'\)/",$cfg,$pe) && strtotime($pe[1])>strtotime($base)) $base=$pe[1];
+    $ends=date('Y-m-d',strtotime($base." +$months month"));
+    if(preg_match("/define\('PLAN_ENDS',/",$cfg)) $cfg=preg_replace("/define\('PLAN_ENDS',\s*'[0-9-]*'\);/","define('PLAN_ENDS', '".$ends."');",$cfg);
+    else $cfg.="define('PLAN_ENDS', '".$ends."');\n";
+  }
   file_put_contents($f,$cfg);
-  out(['plan'=>$plan]);
+  out(['plan'=>$plan,'ends'=>$ends]);
+}
+
+case 'extend': {
+  requireSuper();
+  $code=strtolower(trim($in['code']??''));
+  $months=max(1,min(36,(int)($in['months']??1)));
+  $f="$CLIENTS/$code.php";
+  if(!file_exists($f)) fail('Client not found',404);
+  $cfg=file_get_contents($f);
+  $base=date('Y-m-d');
+  if(preg_match("/define\('PLAN_ENDS',\s*'([0-9-]+)'\)/",$cfg,$pe) && strtotime($pe[1])>strtotime($base)) $base=$pe[1];
+  $ends=date('Y-m-d',strtotime($base." +$months month"));
+  if(preg_match("/define\('PLAN_ENDS',/",$cfg)) $cfg=preg_replace("/define\('PLAN_ENDS',\s*'[0-9-]*'\);/","define('PLAN_ENDS', '".$ends."');",$cfg);
+  else $cfg.="define('PLAN_ENDS', '".$ends."');\n";
+  file_put_contents($f,$cfg);
+  out(['ends'=>$ends]);
 }
 
 case 'set_logo': {
