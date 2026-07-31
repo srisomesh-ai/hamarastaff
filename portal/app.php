@@ -168,7 +168,10 @@ label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:14p
 .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-size:13.5px;font-weight:700;opacity:0;transition:.25s;z-index:99;max-width:88%;text-align:center;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .fab{position:fixed;bottom:78px;right:calc(50% - 210px + 18px);width:56px;height:56px;border-radius:18px;background:var(--teal);color:#fff;font-size:26px;box-shadow:0 6px 18px rgba(14,107,99,.4);z-index:25;display:flex;align-items:center;justify-content:center}
-@media(max-width:430px){.fab{right:18px}}
+@media(max-width:768px){
+ .phone{max-width:100%;box-shadow:none}
+ .fab{right:18px}
+}
 .empty{text-align:center;color:var(--sub);padding:40px 20px;font-size:14px}
 .empty .i{font-size:38px;display:block;margin-bottom:10px}
 .emp-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);width:100%;text-align:left}
@@ -262,7 +265,7 @@ label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:14p
 
 <!-- ============ VISIT FORM ============ -->
 <div class="screen" id="visitForm">
-  <div class="detail-head"><button class="back" onclick="show('taskDetail')">‹</button><b>Visit Report &amp; Close</b></div>
+  <div class="detail-head"><button class="back" onclick="history.back()">‹</button><b>Visit Report &amp; Close</b></div>
   <div class="content">
     <div class="card" id="vfHead"></div>
     <label>Person Met</label>
@@ -324,12 +327,17 @@ async function api(action,data={}){
  return j.data;
 }
 function getLocation(cb){
- let done=false;
- const fb=()=>{if(!done){done=true;cb({lat:(17.7286+(Math.random()-.5)*.004).toFixed(5),lng:(83.3050+(Math.random()-.5)*.004).toFixed(5),area:'Visakhapatnam'})}};
- if(navigator.geolocation){
-  navigator.geolocation.getCurrentPosition(p=>{if(!done){done=true;cb({lat:p.coords.latitude.toFixed(5),lng:p.coords.longitude.toFixed(5),area:'Current GPS'})}},fb,{timeout:5000});
-  setTimeout(fb,5500);
- }else fb();
+ if(!navigator.geolocation){toast('This device does not support GPS');return}
+ toast('Getting GPS location…');
+ navigator.geolocation.getCurrentPosition(
+  p=>cb({lat:p.coords.latitude.toFixed(5),lng:p.coords.longitude.toFixed(5),area:'Live GPS'}),
+  err=>{
+   if(err.code===1)toast('Location permission denied — please allow location for this site and try again');
+   else if(err.code===3)toast('GPS timed out — move to open sky / near a window and try again');
+   else toast('Could not get GPS location — please try again');
+  },
+  {enableHighAccuracy:true,timeout:20000,maximumAge:15000}
+ );
 }
 function pillHTML(st){return `<span class="pill ${st}">${st==='open'?'● Open':st==='reached'?'◉ Reached':'✓ Closed'}</span>`}
 
@@ -354,7 +362,14 @@ async function refresh(){
   if(curTask&&$('taskDetail').classList.contains('active'))renderTaskDetail();}
 }
 
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0)}
+function show(id,push=true){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0);
+ if(push&&id!=='empShell')history.pushState({s:id},'');}
+window.addEventListener('popstate',()=>{
+ const cur=document.querySelector('.screen.active');
+ if(!cur)return;
+ if(cur.id==='visitForm'){show('taskDetail',false);if(curTask)renderTaskDetail();}
+ else if(cur.id==='taskDetail'||cur.id==='newTask'){curTask=null;show('empShell',false);renderEmp();}
+});
 function empTab(id,btn){document.querySelectorAll('#empShell .tabpane').forEach(p=>p.classList.remove('on'));$(id).classList.add('on');document.querySelectorAll('#empShell .bottomnav button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderEmp()}
 function empFilter(f,btn){empF=f;btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderEmp()}
 
@@ -389,18 +404,18 @@ async function endDay(){try{MYDAY=await api('day_end');toast('Day ended. Good wo
 
 /* ---- new task ---- */
 function openNewTask(){['ntDoctor','ntHospital','ntArea','ntEmail','ntPhone'].forEach(i=>$(i).value='');show('newTask')}
-function closeNewTask(){show('empShell')}
+function closeNewTask(){history.back()}
 async function saveNewTask(){
  if(!$('ntDoctor').value.trim())return toast('Enter doctor / client name');
  try{
   await api('task_add',{doctor:$('ntDoctor').value,hospital:$('ntHospital').value,area:$('ntArea').value,purpose:$('ntPurpose').value,planned:$('ntTime').value,email:$('ntEmail').value,phone:$('ntPhone').value});
-  toast('Visit task saved ✓');show('empShell');await refresh();
+  toast('Visit task saved ✓');history.back();await refresh();
  }catch(e){toast('Could not save — try again')}
 }
 
 /* ---- task detail ---- */
 function openTask(id){curTask=TASKS.find(t=>t.id===id);renderTaskDetail();show('taskDetail')}
-function backFromDetail(){curTask=null;show('empShell');renderEmp()}
+function backFromDetail(){history.back()}
 function trItem(x){return `<div class="tr-item ${x.type==='start'?'start':x.type==='close'?'close':''}">
  <div class="tr-time">${x.t}</div><div class="tr-main">${x.main}</div>
  ${x.loc&&x.loc.lat?`<div class="tr-sub">📍 <span class="loc">${x.loc.area} (${x.loc.lat}, ${x.loc.lng})</span></div>`:''}
@@ -458,7 +473,7 @@ function submitVisit(){
     const txt=encodeURIComponent(`*<?= $CN ?> — Visit Summary*\nRep: ${ME.name}\nMet: ${payload.met}\nProducts: ${payload.products.join(', ')||'—'}\nDemo: ${payload.demo} · Samples: ${payload.samples}\nRemarks: ${remarks}${payload.next?'\nNext visit: '+payload.next:''}`);
     window.open('https://wa.me/'+curTask.phone.replace(/[^0-9]/g,'')+'?text='+txt,'_blank');
    }
-   await refresh();show('taskDetail');
+   await refresh();history.back();
   }catch(e){toast('Could not save — try again')}
  };
  if($('vfLocSw').classList.contains('on'))getLocation(finish);else finish(null);
