@@ -1,11 +1,11 @@
 <?php
 /* HamaraStaff tenant health check — open in browser to diagnose problems */
-require __DIR__ . '/config.php';
+require __DIR__ . '/../boot.php';
 header('Content-Type: text/plain; charset=utf-8');
 echo "HamaraStaff Health Check — " . (defined('COMPANY_NAME') ? COMPANY_NAME : 'tenant') . "\n";
 echo str_repeat('=', 50) . "\n";
 echo "PHP version        : " . PHP_VERSION . "\n";
-echo "config.local.php   : " . (file_exists(__DIR__ . '/config.local.php') ? "FOUND ✓ (deploy-proof)" : "not found (using config.php values)") . "\n";
+echo "config.local.php   : " . (file_exists(dirname(dirname(__DIR__)) . '/api/config.local.php') ? "FOUND ✓ (deploy-proof)" : "not found (using master config.php values)") . "\n";
 echo "DB credentials     : " . (strpos(DB_NAME, 'YOUR_DB') === false ? "filled ✓" : "NOT FILLED ✗ — create api/config.local.php with your DB details") . "\n";
 echo "Table prefix       : " . TP . "\n";
 try {

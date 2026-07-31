@@ -1,0 +1,17 @@
+RewriteEngine On
+
+# never execute client config files from the web
+RewriteRule ^clients/.*\.php$ - [F,L]
+
+# tenant API
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([a-z0-9-]+)/api/(api|install|health)\.php$ portal/api/$2.php?c=$1 [L,QSA]
+
+# tenant pages
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-z0-9-]+)/?$ portal/index.php?c=$1 [L,QSA]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([a-z0-9-]+)/app\.html$ portal/app.php?c=$1 [L,QSA]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([a-z0-9-]+)/admin\.html$ portal/admin.php?c=$1 [L,QSA]

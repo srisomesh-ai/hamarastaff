@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/config.php';
+require __DIR__ . '/../boot.php';
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
@@ -8,8 +8,8 @@ function fail($err,$code=400){ http_response_code($code); echo json_encode(['ok'
 function fmt($dt){ return $dt ? date('h:i a', strtotime($dt)) : null; }
 function initials($name){ $p=preg_split('/\s+/',trim($name)); $i=''; foreach(array_slice($p,0,2) as $w) $i.=strtoupper(substr($w,0,1)); return $i?:'?'; }
 function audit($actor,$action,$details=''){ try{ db()->prepare("INSERT INTO hs_audit_log (actor,action,details) VALUES (?,?,?)")->execute([$actor,$action,$details]); }catch(Exception $e){} }
-function requireEmp(){ if(($_SESSION['role']??'')!=='emp') fail('auth',401); return (int)$_SESSION['emp_id']; }
-function requireAdmin(){ if(($_SESSION['role']??'')!=='admin') fail('auth',401); }
+function requireEmp(){ if(($_SESSION['role']??'')!=='emp' || ($_SESSION['tenant']??'')!==CODE) fail('auth',401); return (int)$_SESSION['emp_id']; }
+function requireAdmin(){ if(($_SESSION['role']??'')!=='admin' || ($_SESSION['tenant']??'')!==CODE) fail('auth',401); }
 function actorName(){ return ($_SESSION['role']??'')==='admin' ? 'Admin' : ($_SESSION['emp_name'] ?? 'Unknown'); }
 
 $in = json_decode(file_get_contents('php://input'), true) ?: [];
@@ -91,7 +91,7 @@ case 'login': {
   if($role==='admin'){
     if($u!==ADMIN_USER || $p!==ADMIN_PASS){ audit($u,'login_failed','admin'); fail('invalid'); }
     session_regenerate_id(true);
-    $_SESSION=['role'=>'admin'];
+    $_SESSION=['role'=>'admin','tenant'=>CODE];
     audit('Admin','login','admin panel');
     out(['role'=>'admin']);
   }
@@ -100,7 +100,7 @@ case 'login': {
   if(!$e || $e['password']!==$p){ audit($u,'login_failed','employee'); fail('invalid'); }
   if(!$e['active']){ audit($e['name'],'login_blocked','account disabled'); fail('disabled'); }
   session_regenerate_id(true);
-  $_SESSION=['role'=>'emp','emp_id'=>$e['id'],'emp_name'=>$e['name'],'emp_code'=>$e['emp_code']];
+  $_SESSION=['role'=>'emp','tenant'=>CODE,'emp_id'=>$e['id'],'emp_name'=>$e['name'],'emp_code'=>$e['emp_code']];
   audit($e['name'],'login','mobile app');
   out(['role'=>'emp','name'=>$e['name'],'emp_code'=>$e['emp_code']]);
 }
@@ -108,6 +108,7 @@ case 'login': {
 case 'logout': audit(actorName(),'logout'); $_SESSION=[]; session_destroy(); out(true);
 
 case 'me': {
+  if(($_SESSION['tenant']??'')!==CODE) fail('auth',401);
   if(($_SESSION['role']??'')==='admin') out(['role'=>'admin']);
   if(($_SESSION['role']??'')==='emp') out(['role'=>'emp','name'=>$_SESSION['emp_name'],'emp_code'=>$_SESSION['emp_code']]);
   fail('auth',401);

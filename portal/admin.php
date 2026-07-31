@@ -1,9 +1,10 @@
+<?php require __DIR__ . '/boot.php'; $CN = htmlspecialchars(COMPANY_NAME); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEDCY Hospital — Management Panel</title>
+<title><?= $CN ?> — Management Panel</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -124,8 +125,8 @@ tbody tr.click:hover{background:var(--teal-soft)}
 
 <aside class="sidebar">
   <div class="brand">
-    <div class="b-ic">🏥</div>
-    <div><b>MEDCY Hospital</b><span>Management Panel</span></div>
+    <div class="b-ic"><?php if (client_logo_exists()): ?><img src="<?= CLIENT_LOGO_URL ?>?v=<?= filemtime(CLIENT_LOGO_FILE) ?>" alt="" style="width:34px;height:34px;object-fit:contain"><?php else: ?>🏥<?php endif; ?></div>
+    <div><b><?= $CN ?></b><span>Management Panel</span></div>
   </div>
   <nav class="nav">
     <button class="on" onclick="go('dash',this)"><span class="i">📊</span>Dashboard</button>

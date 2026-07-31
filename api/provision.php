@@ -6,39 +6,58 @@ function out($d){ echo json_encode(['ok'=>true,'data'=>$d]); exit; }
 function fail($e,$c=400){ http_response_code($c); echo json_encode(['ok'=>false,'error'=>$e]); exit; }
 function requireSuper(){ if(($_SESSION['hs_super']??false)!==true) fail('auth',401); }
 
-$ROOT = dirname(__DIR__);                 // site root
-$RESERVED = ['api','assets','css','js','img','images','fonts'];
+$ROOT = dirname(__DIR__);
+$CLIENTS = $ROOT . '/clients';
+if (!is_dir($CLIENTS)) mkdir($CLIENTS, 0755, true);
 
 $in = json_decode(file_get_contents('php://input'), true) ?: [];
 $action = $in['action'] ?? '';
 
-function clientDirs($ROOT,$RESERVED){
+/* prefix-aware DB wrapper (same trick as portal TPDO) */
+class TPDO extends PDO {
+  #[\ReturnTypeWillChange]
+  public function prepare($sql, $options = []) { return parent::prepare(str_replace('hs_', TP, $sql), $options); }
+  #[\ReturnTypeWillChange]
+  public function query($sql, ...$rest) { return parent::query(str_replace('hs_', TP, $sql), ...$rest); }
+  #[\ReturnTypeWillChange]
+  public function exec($sql) { return parent::exec(str_replace('hs_', TP, $sql)); }
+}
+function db() {
+  static $pdo = null;
+  if ($pdo) return $pdo;
+  $pdo = new TPDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_USER, DB_PASS,
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);
+  return $pdo;
+}
+
+function saveLogo($CLIENTS,$code,$dataUrl){
+  if(!$dataUrl) return false;
+  if(!preg_match('#^data:image/(png|jpe?g|webp);base64,(.+)$#',$dataUrl,$m)) fail('Logo must be a PNG/JPG image');
+  $bin=base64_decode($m[2],true);
+  if($bin===false || strlen($bin)>2*1024*1024) fail('Logo file is invalid or larger than 2 MB');
+  if(function_exists('imagecreatefromstring')){
+    $img=@imagecreatefromstring($bin);
+    if($img===false) fail('Could not read the logo image');
+    imagesavealpha($img,true);
+    imagepng($img,"$CLIENTS/$code-logo.png");
+    imagedestroy($img);
+  } else {
+    if(@getimagesizefromstring($bin)===false) fail('Logo is not a valid image');
+    file_put_contents("$CLIENTS/$code-logo.png",$bin);
+  }
+  return true;
+}
+function clientList($CLIENTS){
   $list=[];
-  foreach(scandir($ROOT) as $d){
-    if($d[0]==='.'||in_array($d,$RESERVED)||!is_dir("$ROOT/$d")) continue;
-    if(!file_exists("$ROOT/$d/index.html")||!file_exists("$ROOT/$d/api/config.php")) continue;
-    $cfg=file_get_contents("$ROOT/$d/api/config.php");
-    $name=strtoupper($d);
-    if(preg_match("/define\('COMPANY_NAME',\s*'([^']+)'\)/",$cfg,$m)) $name=$m[1];
-    $installed = !preg_match('/YOUR_DB_NAME/',$cfg);
-    $list[]=['code'=>$d,'name'=>$name,'configured'=>$installed];
+  foreach(glob("$CLIENTS/*.php") as $f){
+    $code=basename($f,'.php');
+    if(!preg_match('/^[a-z0-9][a-z0-9-]{1,19}$/',$code)) continue;
+    $cfg=file_get_contents($f);
+    $name=strtoupper($code);
+    if(preg_match("/define\('COMPANY_NAME',\s*'((?:[^'\\\\]|\\\\.)*)'\)/",$cfg,$m)) $name=stripslashes($m[1]);
+    $list[]=['code'=>$code,'name'=>$name,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
   }
   return $list;
-}
-function rcopy($src,$dst){
-  mkdir($dst,0755,true);
-  foreach(scandir($src) as $f){
-    if($f==='.'||$f==='..') continue;
-    if(is_dir("$src/$f")) rcopy("$src/$f","$dst/$f");
-    else copy("$src/$f","$dst/$f");
-  }
-}
-function rdelete($dir){
-  foreach(scandir($dir) as $f){
-    if($f==='.'||$f==='..') continue;
-    is_dir("$dir/$f") ? rdelete("$dir/$f") : unlink("$dir/$f");
-  }
-  rmdir($dir);
 }
 
 switch($action){
@@ -52,7 +71,7 @@ case 'login': {
 case 'logout': $_SESSION=[]; session_destroy(); out(true);
 case 'me': (($_SESSION['hs_super']??false)===true) ? out(true) : fail('auth',401);
 
-case 'list': { requireSuper(); out(clientDirs($ROOT,$RESERVED)); }
+case 'list': { requireSuper(); out(clientList($CLIENTS)); }
 
 case 'create': {
   requireSuper();
@@ -61,69 +80,45 @@ case 'create': {
   $apass=trim($in['admin_pass']??'');
   $seed=!empty($in['seed_demo']);
   if(!preg_match('/^[a-z0-9][a-z0-9-]{1,19}$/',$code)) fail('Code must be 2–20 letters/numbers (e.g. APOLLO)');
-  if(in_array($code,$RESERVED)) fail('That code is reserved — choose another');
-  if(is_dir("$ROOT/$code")) fail('A client with this code already exists');
+  if(in_array($code,['api','portal','clients','assets','admin','login','pricing','index'])) fail('That code is reserved — choose another');
+  if(file_exists("$CLIENTS/$code.php")) fail('A client with this code already exists');
   if(!$name) fail('Company name is required');
   if(strlen($apass)<6) fail('Admin password must be at least 6 characters');
-  if(!is_dir("$ROOT/".TEMPLATE_DIR)) fail('Template folder missing on server',500);
-  if(strpos(DB_NAME,'YOUR_DB')!==false) fail('Fill the database details in /api/config.php first',500);
 
-  rcopy("$ROOT/".TEMPLATE_DIR, "$ROOT/$code");
+  define('TP', $code.'_');
+  try{
+    require __DIR__ . '/../portal/api/schema.php';
+    hs_create_tables();
+    $seeded = $seed ? hs_seed_demo() : false;
+  }catch(Exception $e){ fail('Database error: '.$e->getMessage(),500); }
 
-  /* rebrand every text file in the new folder */
-  $CODE=strtoupper($code);
-  $tplU=strtoupper(TEMPLATE_DIR); $tplN='MEDCY Hospital';
-  $rii=new RecursiveIteratorIterator(new RecursiveDirectoryIterator("$ROOT/$code",FilesystemIterator::SKIP_DOTS));
-  foreach($rii as $file){
-    if(!in_array(strtolower($file->getExtension()),['html','php'])) continue;
-    $c=file_get_contents($file->getPathname());
-    $c=str_replace([$tplN,'Medcy@2026',$tplU,TEMPLATE_DIR],[$name,$apass,$CODE,$code],$c);
-    file_put_contents($file->getPathname(),$c);
-  }
-
-  /* fresh tenant config with shared DB + unique prefix */
+  /* the WHOLE client = one small config file (+ optional logo) */
   $cfg = "<?php\n"
-    ."/* Auto-generated by HamaraStaff owner panel */\n"
-    ."date_default_timezone_set('Asia/Kolkata');\n"
-    ."if (file_exists(__DIR__ . '/config.local.php')) require __DIR__ . '/config.local.php';\n"
-    ."if (!defined('DB_HOST')) define('DB_HOST', '".addslashes(DB_HOST)."');\n"
-    ."if (!defined('DB_NAME')) define('DB_NAME', '".addslashes(DB_NAME)."');\n"
-    ."if (!defined('DB_USER')) define('DB_USER', '".addslashes(DB_USER)."');\n"
-    ."if (!defined('DB_PASS')) define('DB_PASS', '".addslashes(DB_PASS)."');\n"
-    ."define('TP', '".$code."_');\n"
     ."define('COMPANY_NAME', '".addslashes($name)."');\n"
     ."define('ADMIN_USER', 'admin');\n"
     ."define('ADMIN_PASS', '".addslashes($apass)."');\n"
-    ."define('SEED_DEMO', ".($seed?'true':'false').");\n"
-    ."define('RETENTION_DAYS', 365);\n"
-    ."class TPDO extends PDO {\n"
-    ."  #[\\ReturnTypeWillChange]\n"
-    ."  public function prepare(\$sql, \$options = []) { return parent::prepare(str_replace('hs_', TP, \$sql), \$options); }\n"
-    ."  #[\\ReturnTypeWillChange]\n"
-    ."  public function query(\$sql, ...\$rest) { return parent::query(str_replace('hs_', TP, \$sql), ...\$rest); }\n"
-    ."  #[\\ReturnTypeWillChange]\n"
-    ."  public function exec(\$sql) { return parent::exec(str_replace('hs_', TP, \$sql)); }\n"
-    ."}\n"
-    ."function db() {\n"
-    ."  static \$pdo = null;\n"
-    ."  if (\$pdo) return \$pdo;\n"
-    ."  \$pdo = new TPDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_USER, DB_PASS,\n"
-    ."    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION, PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]);\n"
-    ."  return \$pdo;\n"
-    ."}\n";
-  file_put_contents("$ROOT/$code/api/config.php",$cfg);
+    ."define('SEED_DEMO', ".($seed?'true':'false').");\n";
+  file_put_contents("$CLIENTS/$code.php",$cfg);
+  $logoSaved=saveLogo($CLIENTS,$code,$in['logo']??null);
 
-  out(['code'=>$code,'url'=>'/'.$code.'/','install'=>'/'.$code.'/api/install.php']);
+  out(['code'=>$code,'url'=>'/'.$code.'/','seeded'=>$seeded,'logo'=>$logoSaved]);
+}
+
+case 'set_logo': {
+  requireSuper();
+  $code=strtolower(trim($in['code']??''));
+  if(!file_exists("$CLIENTS/$code.php")) fail('Client not found',404);
+  saveLogo($CLIENTS,$code,$in['logo']??null) ? out(true) : fail('No logo provided');
 }
 
 case 'remove': {
   requireSuper();
   $code=strtolower(trim($in['code']??''));
-  if(!preg_match('/^[a-z0-9][a-z0-9-]{1,19}$/',$code)||in_array($code,$RESERVED)) fail('Invalid code');
-  if(!is_dir("$ROOT/$code")) fail('Client not found',404);
+  if(!file_exists("$CLIENTS/$code.php")) fail('Client not found',404);
   if(($in['confirm']??'')!==$code) fail('Confirmation text does not match the code');
-  rdelete("$ROOT/$code");
-  out(true);   /* note: database tables ({$code}_*) are kept for audit */
+  unlink("$CLIENTS/$code.php");
+  if(file_exists("$CLIENTS/$code-logo.png")) unlink("$CLIENTS/$code-logo.png");
+  out(true);   /* database tables kept for audit */
 }
 
 default: fail('unknown_action');

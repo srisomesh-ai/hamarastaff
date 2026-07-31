@@ -1,9 +1,10 @@
+<?php require __DIR__ . '/boot.php'; $CN = htmlspecialchars(COMPANY_NAME); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>MEDCY Hospital — MR Field Visit Demo</title>
+<title><?= $CN ?> — MR Field Visit Demo</title>
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -188,7 +189,7 @@ label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:14p
 <div class="screen active" id="empShell">
   <div class="topbar">
     <div class="avatar">RK</div>
-    <div class="who"><b>Ravi Kumar</b><span>MR · MEDCY Hospital, Visakhapatnam</span></div>
+    <div class="who"><b>Ravi Kumar</b><span>Field Staff · <?= $CN ?></span></div>
     <button class="out" onclick="logout()">Logout</button>
   </div>
   <div class="content">
@@ -338,7 +339,7 @@ async function boot(){
  const sp=document.querySelector('#empShell .who span');
  const av=document.querySelector('#empShell .topbar .avatar');
  if(b)b.textContent=ME.name;
- if(sp)sp.textContent=ME.emp_code+' · MEDCY Hospital';
+ if(sp)sp.textContent=ME.emp_code+' · <?= $CN ?>';
  if(av)av.textContent=ME.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
  await refresh();
 }
@@ -451,7 +452,7 @@ function submitVisit(){
    await api('task_close',payload);
    toast(sent.length?`Task closed ✓ Report ${sent.includes('Email')?'emailed':''}${sent.length>1?' + WhatsApp':sent.includes('WhatsApp')?'WhatsApp':''}`.trim():'Task closed ✓ Report saved');
    if(sent.includes('WhatsApp')&&curTask.phone){
-    const txt=encodeURIComponent(`*MEDCY Hospital — Visit Summary*\nRep: ${ME.name}\nMet: ${payload.met}\nProducts: ${payload.products.join(', ')||'—'}\nDemo: ${payload.demo} · Samples: ${payload.samples}\nRemarks: ${remarks}${payload.next?'\nNext visit: '+payload.next:''}`);
+    const txt=encodeURIComponent(`*<?= $CN ?> — Visit Summary*\nRep: ${ME.name}\nMet: ${payload.met}\nProducts: ${payload.products.join(', ')||'—'}\nDemo: ${payload.demo} · Samples: ${payload.samples}\nRemarks: ${remarks}${payload.next?'\nNext visit: '+payload.next:''}`);
     window.open('https://wa.me/'+curTask.phone.replace(/[^0-9]/g,'')+'?text='+txt,'_blank');
    }
    await refresh();show('taskDetail');

@@ -96,7 +96,7 @@ async function goPortal(){
  if(!c){err.textContent='Please enter your company code.';err.style.display='block';return}
  btn.disabled=true;btn.textContent='Checking your portal…';
  try{
-  const r=await fetch('/'+c+'/index.html',{method:'HEAD',cache:'no-store'});
+  const r=await fetch('/'+c+'/',{method:'HEAD',cache:'no-store'});
   if(r.ok){btn.textContent='Opening '+c.toUpperCase()+' portal ✓';location.href='/'+c+'/';return}
   throw new Error('nf');
  }catch(e){

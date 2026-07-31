@@ -1,7 +1,6 @@
 <?php
-require __DIR__ . '/config.php';
-header('Content-Type: text/plain; charset=utf-8');
-try {
+/* Shared table schema — requires db() + TP to be defined (via portal/boot.php or provision.php) */
+function hs_create_tables() {
   $db = db();
   $db->exec("CREATE TABLE IF NOT EXISTS hs_employees (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -12,7 +11,6 @@ try {
     active TINYINT(1) NOT NULL DEFAULT 1,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
   $db->exec("CREATE TABLE IF NOT EXISTS hs_attendance (
     id INT AUTO_INCREMENT PRIMARY KEY,
     emp_id INT NOT NULL,
@@ -23,7 +21,6 @@ try {
     UNIQUE KEY uq_emp_date (emp_id, att_date),
     INDEX idx_date (att_date)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
   $db->exec("CREATE TABLE IF NOT EXISTS hs_tasks (
     id INT AUTO_INCREMENT PRIMARY KEY,
     emp_id INT NOT NULL,
@@ -39,7 +36,6 @@ try {
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_emp (emp_id), INDEX idx_created (created_at)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
   $db->exec("CREATE TABLE IF NOT EXISTS hs_task_events (
     id INT AUTO_INCREMENT PRIMARY KEY,
     task_id INT NOT NULL,
@@ -48,7 +44,6 @@ try {
     lat VARCHAR(20), lng VARCHAR(20), area VARCHAR(120),
     INDEX idx_task (task_id), INDEX idx_time (event_time)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
   $db->exec("CREATE TABLE IF NOT EXISTS hs_visit_reports (
     id INT AUTO_INCREMENT PRIMARY KEY,
     task_id INT NOT NULL UNIQUE,
@@ -63,12 +58,10 @@ try {
     sent_via VARCHAR(50) DEFAULT '',
     closed_at DATETIME NOT NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
   $db->exec("CREATE TABLE IF NOT EXISTS hs_approvals (
     ym CHAR(7) PRIMARY KEY,
     approved_at DATETIME NOT NULL
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
   $db->exec("CREATE TABLE IF NOT EXISTS hs_audit_log (
     id INT AUTO_INCREMENT PRIMARY KEY,
     actor VARCHAR(100) NOT NULL,
@@ -77,21 +70,16 @@ try {
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_created (created_at)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
-
+}
+function hs_seed_demo() {
+  $db = db();
   $n = $db->query("SELECT COUNT(*) c FROM hs_employees")->fetch()['c'];
+  if ($n > 0) return false;
   $codebase = strtoupper(rtrim(TP, '_'));
-  if ($n == 0 && defined('SEED_DEMO') && SEED_DEMO) {
-    $st = $db->prepare("INSERT INTO hs_employees (emp_code,name,password,area) VALUES (?,?,?,?)");
-    $st->execute([$codebase.'-1001', 'Ravi Kumar',   strtolower($codebase).'@123', 'Dwaraka Nagar']);
-    $st->execute([$codebase.'-1002', 'Priya Sharma', strtolower($codebase).'@123', 'MVP Colony']);
-    $st->execute([$codebase.'-1003', 'Suresh Babu',  strtolower($codebase).'@123', 'Gajuwaka']);
-    echo "Seeded 3 demo employees ({$codebase}-1001..1003).\n";
-  }
-  echo "✓ " . COMPANY_NAME . " database installed successfully. All tables ready (prefix: " . TP . ").\n";
-  echo "Data retention: " . RETENTION_DAYS . " days (audit purpose).\n";
-  echo "You can now use the app. You may delete this file if you wish.\n";
-} catch (Exception $e) {
-  http_response_code(500);
-  echo "INSTALL ERROR: " . $e->getMessage() . "\n";
-  echo "→ Check that config.php has the correct database name, user and password.\n";
+  $pw = strtolower($codebase) . '@123';
+  $st = $db->prepare("INSERT INTO hs_employees (emp_code,name,password,area) VALUES (?,?,?,?)");
+  $st->execute([$codebase.'-1001', 'Ravi Kumar',   $pw, 'Dwaraka Nagar']);
+  $st->execute([$codebase.'-1002', 'Priya Sharma', $pw, 'MVP Colony']);
+  $st->execute([$codebase.'-1003', 'Suresh Babu',  $pw, 'Gajuwaka']);
+  return true;
 }

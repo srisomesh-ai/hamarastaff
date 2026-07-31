@@ -1,9 +1,10 @@
+<?php require __DIR__ . '/boot.php'; $CN = htmlspecialchars(COMPANY_NAME); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEDCY Hospital — Staff Login | HamaraStaff</title>
+<title><?= $CN ?> — Staff Login | HamaraStaff</title>
 <link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -36,8 +37,8 @@ input:focus{outline:2px solid var(--teal);border-color:var(--teal)}
 
 <div class="card">
   <div class="co">
-    <div class="ic">🏥</div>
-    <div><b>MEDCY Hospital</b><span>Field Staff Portal · Visakhapatnam</span></div>
+    <div class="ic"><?php if (client_logo_exists()): ?><img src="<?= CLIENT_LOGO_URL ?>?v=<?= filemtime(CLIENT_LOGO_FILE) ?>" alt="" style="width:42px;height:42px;object-fit:contain"><?php else: ?>🏥<?php endif; ?></div>
+    <div><b><?= $CN ?></b><span>Field Staff Portal</span></div>
   </div>
   <p class="sub">Sign in to continue to your workspace</p>
 
@@ -47,12 +48,12 @@ input:focus{outline:2px solid var(--teal);border-color:var(--teal)}
   </div>
 
   <label>Employee ID / Username</label>
-  <input id="u" placeholder="e.g. MEDCY-1001" autocomplete="username">
+  <input id="u" placeholder="e.g. <?= strtoupper(CODE) ?>-1001" autocomplete="username">
   <label>Password</label>
   <input id="p" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
   <div class="err" id="err">Please enter your username and password</div>
   <button class="btn" id="loginBtn" onclick="doLogin()">Sign In as Employee →</button>
-  <p class="hint">Authorized MEDCY staff only</p>
+  <p class="hint">Authorized staff only</p>
 </div>
 
 <div class="powered">
