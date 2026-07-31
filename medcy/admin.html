@@ -270,7 +270,7 @@ async function boot(){
 }
 async function loadAll(quiet){
  try{D=await api('admin_overview');render()}
- catch(e){if(!quiet)toast('Could not load data — check connection / database')}
+ catch(e){if(!quiet)toast('Could not load data: '+e.message)}
 }
 function go(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));$(id).classList.add('on');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');if(D)render()}
 
@@ -383,7 +383,7 @@ async function saveEmp(){
  const n=$('fN').value.trim(),i=$('fI').value.trim(),p=$('fP').value.trim(),a=$('fA').value.trim();
  if(!n||!i||!p)return toast('Name, username and password are required');
  try{await api('emp_add',{name:n,emp_code:i,password:p,area:a});closeModal();toast(n+' created ✓ They can now sign in');await loadAll(true)}
- catch(e){toast(e.message==='exists'?'That username already exists':'Could not create')}
+ catch(e){toast(e.message==='exists'?'That username already exists':'Could not create: '+e.message)}
 }
 
 /* ---------- assign visit ---------- */

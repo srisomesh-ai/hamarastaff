@@ -6,17 +6,21 @@
 ==================================================================== */
 date_default_timezone_set('Asia/Kolkata');
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'YOUR_DB_NAME');
-define('DB_USER', 'YOUR_DB_USER');
-define('DB_PASS', 'YOUR_DB_PASSWORD');
+/* Deploy-proof credentials: create api/config.local.php on the server with your
+   real define() values — git deploys will NEVER overwrite that file. */
+if (file_exists(__DIR__ . '/config.local.php')) require __DIR__ . '/config.local.php';
 
-define('TP', 'medcy_');                    // table prefix for this client
-define('COMPANY_NAME', 'MEDCY Hospital');
-define('ADMIN_USER', 'admin');
-define('ADMIN_PASS', 'Medcy@2026');
-define('SEED_DEMO', true);                 // seed 3 demo employees on install
-define('RETENTION_DAYS', 365);             // audit data kept for 1 year
+if (!defined('DB_HOST')) define('DB_HOST', 'localhost');
+if (!defined('DB_NAME')) define('DB_NAME', 'YOUR_DB_NAME');
+if (!defined('DB_USER')) define('DB_USER', 'YOUR_DB_USER');
+if (!defined('DB_PASS')) define('DB_PASS', 'YOUR_DB_PASSWORD');
+
+if (!defined('TP')) define('TP', 'medcy_');                    // table prefix for this client
+if (!defined('COMPANY_NAME')) define('COMPANY_NAME', 'MEDCY Hospital');
+if (!defined('ADMIN_USER')) define('ADMIN_USER', 'admin');
+if (!defined('ADMIN_PASS')) define('ADMIN_PASS', 'Medcy@2026');
+if (!defined('SEED_DEMO')) define('SEED_DEMO', true);                 // seed 3 demo employees on install
+if (!defined('RETENTION_DAYS')) define('RETENTION_DAYS', 365);             // audit data kept for 1 year
 
 class TPDO extends PDO {
   #[\ReturnTypeWillChange]
