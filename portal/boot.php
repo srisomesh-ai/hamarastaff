@@ -20,6 +20,9 @@ if ($___code === '' || !file_exists($___cfg)) {
 require $___cfg;                                   // COMPANY_NAME, ADMIN_USER, ADMIN_PASS, SEED_DEMO
 require $___root . '/api/config.php';              // master DB credentials (+ config.local.php override)
 
+/* per-client timezone (defaults to India). Set in /clients/{code}.php: define('TZ', 'Europe/Amsterdam'); */
+if (defined('TZ') && in_array(TZ, timezone_identifiers_list())) date_default_timezone_set(TZ);
+
 define('CODE', $___code);
 define('TP', $___code . '_');
 if (!defined('ADMIN_USER')) define('ADMIN_USER', 'admin');
