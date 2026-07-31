@@ -318,7 +318,7 @@ async function api(action,data={}){
  const r=await fetch('api/api.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})});
  let j=null;try{j=await r.json()}catch(e){}
  if(!j||!j.ok){
-  if(j&&j.error==='auth'){location.href='index.html';throw new Error('auth')}
+  if(j&&j.error==='auth'){location.href='./';throw new Error('auth')}
   throw new Error(j&&j.error?j.error:'network')
  }
  return j.data;
@@ -464,7 +464,7 @@ function submitVisit(){
  if($('vfLocSw').classList.contains('on'))getLocation(finish);else finish(null);
 }
 
-async function logout(){try{await api('logout')}catch(e){}location.href='index.html'}
+async function logout(){try{await api('logout')}catch(e){}location.href='./'}
 boot();
 
 </script>

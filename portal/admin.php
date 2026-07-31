@@ -194,7 +194,7 @@ tbody tr.click:hover{background:var(--teal-soft)}
   <div class="brand">
     <div class="b-ic"><?php if (client_logo_exists()): ?><img src="<?= CLIENT_LOGO_URL ?>?v=<?= filemtime(CLIENT_LOGO_FILE) ?>" alt="" style="width:34px;height:34px;object-fit:contain"><?php else: ?>🏥<?php endif; ?></div>
     <div style="flex:1;min-width:0"><b><?= $CN ?></b><span>Management Panel</span></div>
-    <button class="hdr-logout" onclick="fetch('api/api.php',{method:'POST',body:JSON.stringify({action:'logout'})}).finally(()=>location.href='index.html')" title="Logout">
+    <button class="hdr-logout" onclick="fetch('api/api.php',{method:'POST',body:JSON.stringify({action:'logout'})}).finally(()=>location.href='./')" title="Logout">
       <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
     </button>
   </div>
@@ -209,7 +209,7 @@ tbody tr.click:hover{background:var(--teal-soft)}
   <div class="me">
     <div class="avatar">AD</div>
     <div style="flex:1"><b>Administrator</b><span><?= $CN ?></span></div>
-    <button onclick="fetch('api/api.php',{method:'POST',body:JSON.stringify({action:'logout'})}).finally(()=>location.href='index.html')" style="color:#fff;background:rgba(255,255,255,.15);padding:8px 12px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer">Logout</button>
+    <button onclick="fetch('api/api.php',{method:'POST',body:JSON.stringify({action:'logout'})}).finally(()=>location.href='./')" style="color:#fff;background:rgba(255,255,255,.15);padding:8px 12px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer">Logout</button>
   </div>
 </aside>
 
@@ -343,7 +343,7 @@ async function api(action,data={}){
  const r=await fetch('api/api.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})});
  let j=null;try{j=await r.json()}catch(e){}
  if(!j||!j.ok){
-  if(j&&j.error==='auth'){location.href='index.html';throw new Error('auth')}
+  if(j&&j.error==='auth'){location.href='./';throw new Error('auth')}
   throw new Error(j&&j.error?j.error:'network')
  }
  return j.data;
@@ -355,7 +355,7 @@ function trItem(x){return `<div class="tr-item ${x.type==='start'?'start':x.type
 let D=null, showPw={};
 
 async function boot(){
- try{const me=await api('me');if(me.role!=='admin'){location.href='index.html';return}}
+ try{const me=await api('me');if(me.role!=='admin'){location.href='./';return}}
  catch(e){return}
  await loadAll();
  setInterval(()=>loadAll(true),60000); /* auto-refresh every minute */

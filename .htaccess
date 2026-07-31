@@ -12,6 +12,8 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^([a-z0-9-]+)/?$ portal/index.php?c=$1 [L,QSA]
 RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^([a-z0-9-]+)/index\.html$ portal/index.php?c=$1 [L,QSA]
+RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^([a-z0-9-]+)/app\.html$ portal/app.php?c=$1 [L,QSA]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^([a-z0-9-]+)/admin\.html$ portal/admin.php?c=$1 [L,QSA]
