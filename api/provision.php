@@ -91,7 +91,6 @@ case 'create': {
   $apass=trim($in['admin_pass']??'');
   $seed=!empty($in['seed_demo']);
   $plan=($in['plan']??'professional')==='starter'?'starter':'professional';
-  $tz=trim($in['tz']??'Asia/Kolkata'); if(!in_array($tz,timezone_identifiers_list())) $tz='Asia/Kolkata';
   if(!preg_match('/^[a-z0-9][a-z0-9-]{1,19}$/',$code)) fail('Code must be 2–20 letters/numbers (e.g. APOLLO)');
   if(in_array($code,['api','portal','clients','assets','admin','login','pricing','index'])) fail('That code is reserved — choose another');
   if(file_exists("$CLIENTS/$code.php")) fail('A client with this code already exists');
@@ -111,8 +110,7 @@ case 'create': {
     ."define('ADMIN_USER', 'admin');\n"
     ."define('ADMIN_PASS', '".addslashes($apass)."');\n"
     ."define('SEED_DEMO', ".($seed?'true':'false').");\n"
-    ."define('PLAN', '".$plan."');\n"
-    ."define('TZ', '".$tz."');\n";
+    ."define('PLAN', '".$plan."');\n";
   file_put_contents("$CLIENTS/$code.php",$cfg);
   $logoSaved=saveLogo($CLIENTS,$code,$in['logo']??null);
 

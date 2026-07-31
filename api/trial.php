@@ -20,8 +20,6 @@ $name  = trim($in['company'] ?? '');
 $code  = strtolower(trim($in['code'] ?? ''));
 $email = strtolower(trim($in['email'] ?? ''));
 $phone = trim($in['phone'] ?? '');
-$tz    = trim($in['tz'] ?? 'Asia/Kolkata');
-if (!in_array($tz, timezone_identifiers_list())) $tz = 'Asia/Kolkata';
 
 if (strlen($name) < 3) fail('Please enter your company / institute name');
 if (!preg_match('/^[a-z0-9][a-z0-9-]{1,19}$/', $code)) fail('Portal code must be 2–20 letters or numbers');
@@ -74,7 +72,6 @@ $cfg = "<?php\n"
   . "define('TRIAL_ENDS', '$ends');\n"
   . "define('TRIAL_EMAIL', '" . addslashes($email) . "');\n"
   . "define('TRIAL_PHONE', '" . addslashes($phone) . "');\n"
-  . "define('TZ', '" . $tz . "');\n"
   . "define('DRIP_STAGE', 1);\n";
 file_put_contents("$CLIENTS/$code.php", $cfg);
 
