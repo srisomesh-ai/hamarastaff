@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEDCY Hospital — Staff Login | HamaraStaff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#0E6B63;--teal-dark:#0A4F49;--teal-soft:#E3F0EE;--ink:#13211F;--sub:#5B6E6B;--line:#E2EAE8;--red:#B3261E}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Manrope',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(150deg,var(--teal-dark),var(--teal) 55%,#12857B);padding:24px;color:var(--ink)}
+.card{background:#fff;border-radius:22px;width:100%;max-width:420px;padding:32px 30px;box-shadow:0 24px 60px rgba(6,40,37,.35)}
+.co{display:flex;gap:14px;align-items:center;margin-bottom:6px}
+.co .ic{width:52px;height:52px;border-radius:15px;background:var(--teal-soft);display:flex;align-items:center;justify-content:center;font-size:26px}
+.co b{font-size:20px;display:block;line-height:1.15}
+.co span{font-size:12.5px;color:var(--sub);font-weight:600}
+.sub{font-size:13px;color:var(--sub);margin:6px 0 20px}
+.tabs{display:flex;background:#EDF3F2;border-radius:13px;padding:5px;gap:5px;margin-bottom:20px}
+.tabs button{flex:1;padding:11px;border:none;border-radius:10px;font-family:inherit;font-size:13.5px;font-weight:800;color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:.15s}
+.tabs button.on{background:#fff;color:var(--teal);box-shadow:0 1px 5px rgba(0,0,0,.1)}
+label{display:block;font-size:11.5px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px}
+input{width:100%;padding:13px 15px;border:1.5px solid var(--line);border-radius:12px;font-family:inherit;font-size:15px}
+input:focus{outline:2px solid var(--teal);border-color:var(--teal)}
+.btn{width:100%;margin-top:22px;padding:14px;border:none;border-radius:13px;background:var(--teal);color:#fff;font-family:inherit;font-size:15px;font-weight:800;cursor:pointer;transition:.15s}
+.btn:active{transform:scale(.98)}
+.hint{text-align:center;font-size:12px;color:var(--sub);margin-top:14px}
+.err{display:none;background:#FBE9E7;color:var(--red);font-size:12.5px;font-weight:700;border-radius:10px;padding:9px 12px;margin-top:12px;text-align:center}
+.powered{margin-top:22px;color:#fff;font-size:12.5px;opacity:.85;text-align:center;line-height:1.7}
+.powered b{opacity:1}
+.powered a{color:#fff;font-weight:800;text-decoration:none}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="co">
+    <div class="ic">🏥</div>
+    <div><b>MEDCY Hospital</b><span>Field Staff Portal · Visakhapatnam</span></div>
+  </div>
+  <p class="sub">Sign in to continue to your workspace</p>
+
+  <div class="tabs">
+    <button class="on" id="tabEmp" onclick="pick('emp')">🧑‍⚕️ Employee</button>
+    <button id="tabAdmin" onclick="pick('admin')">👔 Administrator</button>
+  </div>
+
+  <label>Employee ID / Username</label>
+  <input id="u" placeholder="e.g. MEDCY-1001" autocomplete="username">
+  <label>Password</label>
+  <input id="p" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+  <div class="err" id="err">Please enter your username and password</div>
+  <button class="btn" id="loginBtn" onclick="doLogin()">Sign In as Employee →</button>
+  <p class="hint">Authorized MEDCY staff only</p>
+</div>
+
+<div class="powered">
+  Powered by <b>HamaraStaff</b> · <a href="https://hamarastaff.com">hamarastaff.com</a><br>
+  GPS Attendance · Field Visit Tracking · Payroll Reports
+</div>
+
+<script>
+let role='emp';
+function pick(r){
+ role=r;
+ document.getElementById('tabEmp').classList.toggle('on',r==='emp');
+ document.getElementById('tabAdmin').classList.toggle('on',r==='admin');
+ document.getElementById('loginBtn').textContent=r==='emp'?'Sign In as Employee \u2192':'Sign In as Administrator \u2192';
+ document.querySelector('label').textContent=r==='emp'?'Employee ID / Username':'Admin Username';
+}
+async function doLogin(){
+ const u=document.getElementById('u').value.trim(), p=document.getElementById('p').value.trim();
+ const err=document.getElementById('err'), btn=document.getElementById('loginBtn');
+ const fail=m=>{err.textContent=m;err.style.display='block';btn.disabled=false;btn.textContent=role==='emp'?'Sign In as Employee \u2192':'Sign In as Administrator \u2192'};
+ if(!u||!p)return fail('Please enter your username and password');
+ err.style.display='none';btn.disabled=true;btn.textContent='Signing in\u2026';
+ try{
+  const r=await fetch('api/api.php',{method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({action:'login',role:role==='admin'?'admin':'emp',username:u,password:p})});
+  const j=await r.json();
+  if(!j.ok){
+   if(j.error==='disabled')return fail('Your access has been disabled. Please contact the administrator.');
+   if(j.error&&j.error.length>30)return fail(j.error);
+   return fail('Invalid username or password');
+  }
+  location.href = role==='admin' ? 'admin.html' : 'app.html';
+ }catch(e){fail('Server error \u2014 please try again')}
+}
+document.getElementById('p').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+</script>
+</body>
+</html>
