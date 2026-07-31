@@ -21,6 +21,8 @@ if (PLAN === 'starter') {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= $CN ?> — Management Panel</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>const HS_PLAN='<?= PLAN ?>';const HS_TRIAL_DAYS=<?= (int)TRIAL_DAYS_LEFT ?>;const HS_CODE='<?= CODE ?>';const HS_UPI='srisomeshidfc@ybl';const HS_PAYEE='Hamara Staff';</script>
 <link rel="icon" type="image/png" href="/assets/favicon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -156,6 +158,7 @@ tbody tr.click:hover{background:var(--teal-soft)}
     <button onclick="go('visits',this)"><span class="i">📋</span>Field Visits</button>
     <button onclick="go('activity',this)"><span class="i">🕒</span>Activity Trail</button>
     <button onclick="go('emps',this)"><span class="i">👥</span>Employees</button>
+    <button onclick="go('billing',this)"><span class="i">💳</span>Plan &amp; Billing</button>
   </nav>
   <div class="me">
     <div class="avatar">AP</div>
@@ -255,6 +258,16 @@ tbody tr.click:hover{background:var(--teal-soft)}
     </div>
     <p style="font-size:12.5px;color:var(--sub)">Disabled employees cannot sign in to the mobile app. Deleting an employee removes their login permanently.</p>
   </section>
+
+  <!-- ============ PLAN & BILLING ============ -->
+  <section class="page" id="billing">
+    <div class="pagehead">
+      <div><h1>Plan &amp; Billing</h1><div class="date">Your current plan and payment options</div></div>
+    </div>
+    <div id="curPlanCard"></div>
+    <div class="grid2" id="planCards" style="grid-template-columns:1fr 1fr"></div>
+    <p style="font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:6px">Payments go to <b>Hamara Staff</b> via UPI. After paying, send the payment screenshot to <b>info@hamarastaff.com</b> or WhatsApp — your plan is activated the same day.</p>
+  </section>
 </main>
 </div>
 
@@ -350,6 +363,7 @@ function render(){
 
  /* employees */
  renderEmps();
+ renderBilling();
 }
 function renderActivity(){
  const eid=parseInt($('empPick').value)||(D&&D.employees[0]?D.employees[0].id:0);
@@ -460,6 +474,69 @@ function openReport(id){
  $('overlay').classList.add('show');
 }
 function closeModal(){$('overlay').classList.remove('show')}
+
+/* ---------- Plan & Billing ---------- */
+function activeEmpCount(){return D?D.employees.filter(e=>e.active).length:0}
+function renderBilling(){
+ const el=$('curPlanCard'); if(!el)return;
+ const n=activeEmpCount();
+ let head='';
+ if(HS_PLAN==='trial'){
+  const d=HS_TRIAL_DAYS;
+  head=`<div class="card" style="background:linear-gradient(120deg,#C77800,#F0A322);color:#fff;border:none">
+   <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <div style="font-size:34px">🎁</div>
+    <div style="flex:1"><b style="font-size:17px">Free Trial — Full Access</b>
+     <div style="font-size:13px;opacity:.95;margin-top:3px">${d<0?'Your trial has ended':d===0?'Last day today!':d+' day'+(d>1?'s':'')+' left'} · Choose a plan below to continue without interruption</div></div>
+   </div></div>`;
+ }else if(HS_PLAN==='starter'){
+  head=`<div class="card"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+   <div style="font-size:30px">📱</div>
+   <div style="flex:1"><b style="font-size:16px">Current Plan: ₹150 Starter</b>
+   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app for field staff · ${n} active employee${n!==1?'s':''} · ₹${150*n}/month</div></div>
+   <span class="pill present">✓ Active</span></div></div>`;
+ }else{
+  head=`<div class="card"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+   <div style="font-size:30px">🖥️</div>
+   <div style="flex:1"><b style="font-size:16px">Current Plan: ₹250 Professional</b>
+   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app + Desktop panel · ${n} active employee${n!==1?'s':''} · ₹${250*n}/month</div></div>
+   <span class="pill present">✓ Active</span></div></div>`;
+ }
+ el.innerHTML=head;
+ const plan=(rate,title,desc,feats,active)=>`
+  <div class="card" style="${active?'border:2px solid var(--teal)':''}">
+   <b style="font-size:16px">${title}</b>
+   <div style="font-size:26px;font-weight:700;font-family:'Space Grotesk';color:var(--teal);margin:6px 0 2px">₹${rate}<span style="font-size:13px;color:var(--sub)"> /employee/month</span></div>
+   <div class="muted" style="font-size:12.5px;margin-bottom:10px">${desc}</div>
+   <div style="font-size:12.5px;line-height:2">${feats.map(x=>'✓ '+x).join('<br>')}</div>
+   ${active?'<div class="pill present" style="margin-top:14px">✓ Currently Active</div>'
+    :`<button class="btn primary" style="margin-top:14px;width:100%;justify-content:center" onclick="openPay(${rate},'${title.replace(/'/g,'')}')">Pay ₹${rate*Math.max(activeEmpCount(),1)} &amp; Activate</button>`}
+  </div>`;
+ $('planCards').innerHTML=
+  plan(150,'Starter','Mobile app for field staff',['GPS attendance & visit tasks','Visit reports emailed to clients','Excel reports'],HS_PLAN==='starter')+
+  plan(250,'Professional','Mobile app + this desktop panel',['Everything in Starter','Desktop management panel','HOD payroll approval','Priority support'],HS_PLAN==='professional');
+}
+function openPay(rate,title){
+ const n=Math.max(activeEmpCount(),1);
+ const amt=rate*n;
+ const tn=('HamaraStaff '+HS_CODE.toUpperCase()+' '+title+' plan').slice(0,50);
+ const upiLink='upi://pay?pa='+encodeURIComponent(HS_UPI)+'&pn='+encodeURIComponent(HS_PAYEE)+'&am='+amt+'&cu=INR&tn='+encodeURIComponent(tn);
+ $('modalBody').innerHTML=`
+  <b style="font-size:18px">Pay for ${title} Plan</b>
+  <div class="muted" style="font-size:13px;margin-top:4px">${n} active employee${n!==1?'s':''} × ₹${rate} = <b style="color:var(--teal);font-size:15px">₹${amt}/month</b></div>
+  <div style="display:flex;flex-direction:column;align-items:center;background:var(--bg);border-radius:16px;padding:20px;margin-top:16px">
+   <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.5px;margin-bottom:10px">SCAN WITH ANY UPI APP</div>
+   <div id="upiQr" style="background:#fff;padding:12px;border-radius:14px"></div>
+   <div style="margin-top:12px;font-size:14px;font-weight:800">Paying to: <span style="color:var(--teal)">Hamara Staff</span></div>
+   <div class="num" style="font-size:13px;color:var(--sub);margin-top:2px">${HS_UPI}
+    <button onclick="navigator.clipboard&&navigator.clipboard.writeText(HS_UPI).then(()=>toast('UPI ID copied ✓'))" style="cursor:pointer;font-size:12px;background:var(--teal-soft);color:var(--teal);border-radius:8px;padding:4px 9px;font-weight:800;margin-left:6px">Copy</button>
+   </div>
+   <a href="${upiLink}" class="btn green" style="margin-top:14px;text-decoration:none">📲 Pay ₹${amt} via UPI App</a>
+  </div>
+  <p class="muted" style="font-size:12.5px;line-height:1.7;margin-top:14px">After payment, send the screenshot to <b>info@hamarastaff.com</b> (or WhatsApp) with your portal code <b>${HS_CODE.toUpperCase()}</b>. Your ${title} plan will be activated the same day.</p>`;
+ $('overlay').classList.add('show');
+ try{new QRCode(document.getElementById('upiQr'),{text:upiLink,width:190,height:190,correctLevel:QRCode.CorrectLevel.M})}catch(e){document.getElementById('upiQr').innerHTML='<div style="padding:20px;font-size:12px;color:var(--sub)">QR unavailable — use the UPI ID above</div>'}
+}
 
 /* ---------- HOD & Excel ---------- */
 async function hodApprove(){try{await api('hod_approve');toast('Attendance approved by HOD ✓ Sent to payroll');await loadAll(true)}catch(e){toast('Could not approve')}}
