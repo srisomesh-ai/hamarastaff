@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= $CN ?> — Staff Login | HamaraStaff</title>
-<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="icon" type="image/png" href="/assets/favicon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -57,7 +57,7 @@ input:focus{outline:2px solid var(--teal);border-color:var(--teal)}
 </div>
 
 <div class="powered">
-  <a href="https://hamarastaff.com" style="display:inline-block;background:#fff;padding:6px 12px;border-radius:12px;margin-bottom:10px"><img src="/assets/logo.png" alt="HamaraStaff" style="height:26px;display:block"></a><br>
+  <a href="https://hamarastaff.com" style="display:inline-block;background:#fff;padding:6px 12px;border-radius:12px;margin-bottom:10px"><img src="/assets/logo.png?v=2" alt="HamaraStaff" style="height:26px;display:block"></a><br>
   Powered by <b>HamaraStaff</b> · <a href="https://hamarastaff.com">hamarastaff.com</a><br>
   GPS Attendance · Field Visit Tracking · Payroll Reports
 </div>
