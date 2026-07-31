@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Client Login — HamaraStaff</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#0E6B63;--teal-dark:#083D38;--teal-mid:#12857B;--soft:#E3F0EE;--ink:#13211F;--sub:#5B6E6B;--line:#E2EAE8;--red:#B3261E}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Manrope',sans-serif;min-height:100vh;color:var(--ink);display:grid;grid-template-columns:1fr 1fr}
+@media(max-width:840px){body{grid-template-columns:1fr}.side{display:none}}
+
+/* left brand side */
+.side{background:
+ radial-gradient(600px 400px at 80% 10%,rgba(18,133,123,.6),transparent),
+ linear-gradient(160deg,var(--teal-dark),var(--teal) 70%,var(--teal-mid));
+ color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:40px 44px;position:relative;overflow:hidden}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px}
+.logo .lg{width:38px;height:38px;border-radius:11px;background:#fff;color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:19px}
+.side h2{font-size:clamp(26px,3vw,36px);font-weight:800;line-height:1.2;max-width:380px}
+.side p{opacity:.9;margin-top:14px;max-width:380px;line-height:1.65;font-size:15px}
+.orbit{position:absolute;right:-90px;bottom:-90px;width:340px;height:340px;border:2px dashed rgba(255,255,255,.25);border-radius:50%;animation:spin 30s linear infinite}
+.orbit .pin{position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:30px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.side .foot{font-size:12.5px;opacity:.8}
+
+/* right form side */
+.pane{display:flex;align-items:center;justify-content:center;padding:40px 24px;background:#F6FAF9}
+.card{width:100%;max-width:430px}
+.card .em{font-size:38px}
+.card h1{font-size:26px;font-weight:800;margin:14px 0 8px}
+.card .sub{color:var(--sub);font-size:14.5px;line-height:1.6;margin-bottom:30px}
+label{display:block;font-size:11.5px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.codewrap{position:relative}
+.codewrap .pre{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--sub);font-weight:700;pointer-events:none}
+#code{width:100%;padding:18px 16px 18px 16px;border:2px solid var(--line);border-radius:16px;font-family:'Space Grotesk',monospace;font-size:22px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--teal);background:#fff;outline:none;transition:.2s;text-align:center}
+#code:focus{border-color:var(--teal);box-shadow:0 0 0 4px var(--soft)}
+#code::placeholder{color:#B9CBC8;letter-spacing:3px}
+.urlprev{margin-top:10px;font-size:13px;color:var(--sub);font-weight:600;text-align:center;min-height:18px}
+.urlprev b{color:var(--teal);font-family:'Space Grotesk'}
+.btn{width:100%;margin-top:22px;padding:16px;border:none;border-radius:15px;background:var(--teal);color:#fff;font-family:inherit;font-size:15.5px;font-weight:800;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:9px}
+.btn:hover{background:var(--teal-mid);transform:translateY(-1px)}
+.btn:disabled{opacity:.6;cursor:wait;transform:none}
+.err{display:none;margin-top:16px;background:#FBE9E7;color:var(--red);font-size:13px;font-weight:700;border-radius:12px;padding:12px 14px;line-height:1.5}
+.err a{color:var(--red);text-decoration:underline}
+.hint{margin-top:26px;text-align:center;font-size:13px;color:var(--sub)}
+.hint a{color:var(--teal);font-weight:800;text-decoration:none}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--sub);font-size:13px;font-weight:700;text-decoration:none;margin-bottom:26px}
+.back:hover{color:var(--teal)}
+</style>
+</head>
+<body>
+
+<aside class="side">
+ <a class="logo" href="/"><span class="lg">📍</span>Hamara<span style="opacity:.85">Staff</span></a>
+ <div>
+  <h2>Your team's portal is one code away.</h2>
+  <p>Every HamaraStaff client gets a private, branded portal. Enter your company code to reach your team's login — staff and management both sign in from there.</p>
+ </div>
+ <div class="foot">© 2026 HamaraStaff · A BharatGPS product</div>
+ <div class="orbit"><span class="pin">📍</span></div>
+</aside>
+
+<main class="pane">
+ <div class="card">
+  <a class="back" href="/">‹ Back to website</a>
+  <div class="em">🏢</div>
+  <h1>Client Login</h1>
+  <p class="sub">Enter your <b>company or institute code</b> in capital letters — as given by HamaraStaff. Example: <b style="color:var(--teal)">MEDCY</b></p>
+  <label for="code">Company Code</label>
+  <div class="codewrap">
+   <input id="code" placeholder="MEDCY" maxlength="20" autocomplete="off" autofocus
+     oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');preview()"
+     onkeydown="if(event.key==='Enter')goPortal()">
+  </div>
+  <div class="urlprev" id="urlprev">hamarastaff.com/<b>—</b></div>
+  <button class="btn" id="goBtn" onclick="goPortal()">Continue to My Portal →</button>
+  <div class="err" id="err"></div>
+  <p class="hint">Don't have a code yet? <a href="/#contact">Request a demo</a> and we'll create your company portal.</p>
+ </div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+function preview(){
+ const c=$('code').value.trim().toLowerCase();
+ $('urlprev').innerHTML='hamarastaff.com/<b>'+(c||'—')+'</b>';
+ $('err').style.display='none';
+}
+async function goPortal(){
+ const c=$('code').value.trim().toLowerCase();
+ const err=$('err'), btn=$('goBtn');
+ if(!c){err.textContent='Please enter your company code.';err.style.display='block';return}
+ btn.disabled=true;btn.textContent='Checking your portal…';
+ try{
+  const r=await fetch('/'+c+'/index.html',{method:'HEAD',cache:'no-store'});
+  if(r.ok){btn.textContent='Opening '+c.toUpperCase()+' portal ✓';location.href='/'+c+'/';return}
+  throw new Error('nf');
+ }catch(e){
+  err.innerHTML='We couldn\'t find a portal for <b>'+$('code').value+'</b>. Please check the code with your administrator, or <a href="/#contact">contact us</a> to get set up.';
+  err.style.display='block';
+  btn.disabled=false;btn.textContent='Continue to My Portal →';
+ }
+}
+</script>
+</body>
+</html>

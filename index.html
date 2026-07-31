@@ -188,7 +188,7 @@ footer b{color:#fff}
    <a href="#pricing">Pricing</a>
    <a href="#contact">Contact</a>
   </div>
-  <a class="nav-cta" href="#contact">Client Login</a>
+  <a class="nav-cta" href="login.html">Client Login</a>
  </div>
 </nav>
 
@@ -376,7 +376,7 @@ document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
 /* client portal code */
 function goPortal(){
  const c=document.getElementById('ccode').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
- if(!c)return;
+ if(!c){location.href='login.html';return}
  location.href='/'+c+'/';
 }
 </script>
