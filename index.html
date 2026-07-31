@@ -3,38 +3,382 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HamaraStaff — GPS Field Staff Tracking</title>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<title>HamaraStaff — GPS Attendance & Field Staff Tracking for Indian Businesses</title>
+<meta name="description" content="GPS-based attendance and field visit tracking for marketing teams, medical representatives, sales & service staff. Mobile app for employees, desktop panel for management, Excel reports for payroll.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--teal:#0E6B63;--teal-dark:#0A4F49;--soft:#E3F0EE;--ink:#13211F;--sub:#5B6E6B}
+:root{
+ --teal:#0E6B63;--teal-dark:#083D38;--teal-mid:#12857B;--soft:#E3F0EE;
+ --ink:#13211F;--sub:#5B6E6B;--line:#E2EAE8;--bg:#F4F8F7;
+ --amber:#F0A322;--green:#2FA24F;--blue:#1859A8;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Manrope',sans-serif;min-height:100vh;background:linear-gradient(150deg,var(--teal-dark),var(--teal) 55%,#12857B);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px}
-.badge{width:72px;height:72px;border-radius:20px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:20px}
-h1{font-size:clamp(30px,6vw,44px);font-weight:800}
-h1 span{opacity:.85}
-p.tag{opacity:.9;font-size:16px;max-width:520px;margin:12px 0 30px;line-height:1.6}
-.feat{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:640px}
-.feat div{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:9px 18px;font-size:13px;font-weight:700}
-.cta{margin-top:36px;font-size:13.5px;opacity:.9}
-.cta a{color:#fff;font-weight:800}
-.portal{margin-top:14px;display:inline-block;background:#fff;color:var(--teal);font-weight:800;padding:13px 26px;border-radius:14px;text-decoration:none;font-size:14.5px}
-footer{margin-top:50px;font-size:12px;opacity:.75;line-height:1.7}
+html{scroll-behavior:smooth}
+body{font-family:'Manrope',sans-serif;color:var(--ink);background:#fff;overflow-x:hidden}
+.num{font-family:'Space Grotesk',monospace}
+a{text-decoration:none;color:inherit}
+img{max-width:100%}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+h2.sec{font-size:clamp(26px,4vw,36px);font-weight:800;text-align:center;line-height:1.2}
+p.sec-sub{text-align:center;color:var(--sub);font-size:16px;max-width:560px;margin:12px auto 46px;line-height:1.6}
+.eyebrow{display:block;text-align:center;color:var(--teal);font-size:12.5px;font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px}
+
+/* reveal animation */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+
+/* ---------- NAV ---------- */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.navin{max-width:1120px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;gap:26px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px}
+.logo .lg{width:36px;height:36px;border-radius:11px;background:linear-gradient(140deg,var(--teal),var(--teal-mid));color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo span{color:var(--teal)}
+.navlinks{display:flex;gap:24px;margin-left:auto;font-size:14px;font-weight:700;color:var(--sub)}
+.navlinks a:hover{color:var(--teal)}
+.nav-cta{background:var(--teal);color:#fff;font-size:13.5px;font-weight:800;padding:10px 18px;border-radius:11px}
+@media(max-width:820px){.navlinks{display:none}}
+
+/* ---------- HERO ---------- */
+.hero{background:
+ radial-gradient(700px 400px at 85% -10%,rgba(18,133,123,.55),transparent),
+ radial-gradient(600px 380px at -10% 30%,rgba(14,107,99,.5),transparent),
+ linear-gradient(160deg,var(--teal-dark),var(--teal) 70%,var(--teal-mid));
+ color:#fff;padding:150px 0 90px;position:relative}
+.heroin{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+@media(max-width:880px){.heroin{grid-template-columns:1fr}.phone-zone{display:flex;justify-content:center}}
+.hero .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.3);padding:8px 16px;border-radius:99px;font-size:12.5px;font-weight:800;letter-spacing:.4px}
+.hero h1{font-size:clamp(32px,5vw,52px);font-weight:800;line-height:1.12;margin:20px 0 18px}
+.hero h1 em{font-style:normal;color:#8FE3D9}
+.hero p{font-size:17px;opacity:.92;max-width:520px;line-height:1.65}
+.hero-ctas{display:flex;gap:14px;margin-top:30px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:9px;padding:15px 26px;border-radius:14px;font-size:15px;font-weight:800;transition:.2s;cursor:pointer;border:none;font-family:inherit}
+.btn.white{background:#fff;color:var(--teal)}
+.btn.white:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.25)}
+.btn.glass{background:rgba(255,255,255,.13);color:#fff;border:1.5px solid rgba(255,255,255,.4)}
+.btn.glass:hover{background:rgba(255,255,255,.22)}
+.hero-trust{margin-top:26px;font-size:13px;opacity:.8}
+
+/* animated phone mockup */
+.phone-zone{position:relative}
+.phone{width:290px;background:#fff;border-radius:34px;padding:14px;box-shadow:0 40px 90px rgba(0,0,0,.4);animation:float 5s ease-in-out infinite;margin-left:auto;position:relative;z-index:2}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-16px) rotate(-1.5deg)}}
+.scr{background:var(--bg);border-radius:24px;overflow:hidden;color:var(--ink)}
+.scr .top{background:var(--teal);color:#fff;padding:14px;font-size:13px;font-weight:800;display:flex;align-items:center;gap:8px}
+.scr .top .av{width:26px;height:26px;border-radius:50%;background:#fff;color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800}
+.scr .body{padding:12px}
+.daychip{background:linear-gradient(135deg,var(--teal),var(--teal-mid));border-radius:14px;color:#fff;padding:12px;font-size:11px}
+.daychip b{font-size:17px;display:block;margin:2px 0}
+.gps{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:10.5px;opacity:.95}
+.dot{width:8px;height:8px;border-radius:50%;background:#7CFACD;position:relative}
+.dot::after{content:'';position:absolute;inset:-5px;border-radius:50%;border:2px solid #7CFACD;animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.5);opacity:0}}
+.mini-task{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin-top:9px;font-size:11px}
+.mini-task b{font-size:12px}
+.mini-task .st{float:right;font-size:9px;font-weight:800;padding:3px 8px;border-radius:99px}
+.st.g{background:#E3F3E7;color:var(--green)}
+.st.b{background:#E4EEFA;color:var(--blue)}
+.mini-task .mt{color:var(--sub);margin-top:3px}
+.float-card{position:absolute;background:#fff;border-radius:14px;box-shadow:0 16px 40px rgba(0,0,0,.28);padding:12px 16px;font-size:12px;font-weight:700;color:var(--ink);display:flex;gap:10px;align-items:center;z-index:3}
+.float-card .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.fc1{top:8%;left:-4%;animation:float 6s ease-in-out infinite .6s}
+.fc2{bottom:12%;left:-12%;animation:float 6s ease-in-out infinite 1.2s}
+.fc3{top:45%;right:-6%;animation:float 6s ease-in-out infinite 1.8s}
+.float-card small{display:block;color:var(--sub);font-weight:600;font-size:10.5px}
+@media(max-width:880px){.fc2{left:0}.fc1{left:2%}.fc3{right:0}}
+
+/* ---------- STATS ---------- */
+.stats{background:#fff;padding:36px 0;border-bottom:1px solid var(--line)}
+.statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;text-align:center}
+@media(max-width:720px){.statgrid{grid-template-columns:repeat(2,1fr)}}
+.stat .n{font-size:32px;font-weight:700;font-family:'Space Grotesk';color:var(--teal)}
+.stat .l{font-size:12.5px;color:var(--sub);font-weight:700;margin-top:2px}
+
+/* ---------- HOW ---------- */
+.how{padding:90px 0;background:var(--bg)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+@media(max-width:900px){.steps{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.steps{grid-template-columns:1fr}}
+.step{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px 22px;position:relative;transition:.25s}
+.step:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(14,107,99,.14)}
+.step .nb{width:40px;height:40px;border-radius:13px;background:var(--soft);color:var(--teal);font-weight:700;font-family:'Space Grotesk';font-size:17px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.step .em{font-size:26px;position:absolute;top:24px;right:22px}
+.step b{font-size:16px;display:block;margin-bottom:8px}
+.step p{font-size:13.5px;color:var(--sub);line-height:1.6}
+
+/* ---------- FEATURES ---------- */
+.features{padding:90px 0}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:900px){.fgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.fgrid{grid-template-columns:1fr}}
+.f{border:1px solid var(--line);border-radius:20px;padding:26px;transition:.25s;background:#fff}
+.f:hover{border-color:var(--teal);box-shadow:0 16px 36px rgba(14,107,99,.12);transform:translateY(-4px)}
+.f .ic{width:48px;height:48px;border-radius:14px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
+.f b{font-size:15.5px;display:block;margin-bottom:7px}
+.f p{font-size:13.5px;color:var(--sub);line-height:1.6}
+
+/* ---------- INDUSTRIES ---------- */
+.inds{padding:90px 0;background:linear-gradient(160deg,var(--teal-dark),var(--teal));color:#fff}
+.inds h2.sec,.inds .eyebrow{color:#fff}
+.inds .eyebrow{color:#8FE3D9}
+.inds p.sec-sub{color:rgba(255,255,255,.85)}
+.igrid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+@media(max-width:900px){.igrid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.igrid{grid-template-columns:repeat(2,1fr)}}
+.ind{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:18px;padding:24px 16px;text-align:center;transition:.25s}
+.ind:hover{background:rgba(255,255,255,.2);transform:translateY(-4px)}
+.ind .em{font-size:30px}
+.ind b{display:block;font-size:13.5px;margin-top:10px}
+.ind span{font-size:11.5px;opacity:.8}
+
+/* ---------- PANEL SHOWCASE ---------- */
+.showcase{padding:90px 0;background:var(--bg)}
+.mock-panel{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 30px 70px rgba(14,107,99,.15);overflow:hidden;max-width:860px;margin:0 auto}
+.mock-bar{background:var(--teal-dark);padding:12px 18px;display:flex;gap:7px}
+.mock-bar i{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.35)}
+.mock-body{display:grid;grid-template-columns:170px 1fr}
+@media(max-width:640px){.mock-body{grid-template-columns:1fr}.mock-side{display:none}}
+.mock-side{background:linear-gradient(180deg,var(--teal-dark),var(--teal));padding:16px 12px;color:#fff;font-size:11.5px;font-weight:700}
+.mock-side div{padding:9px 11px;border-radius:9px;margin-bottom:4px;opacity:.85}
+.mock-side div.on{background:#fff;color:var(--teal);opacity:1}
+.mock-main{padding:18px}
+.mock-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:14px}
+.mock-stats div{border:1px solid var(--line);border-radius:11px;padding:9px;font-size:9.5px;color:var(--sub);font-weight:800}
+.mock-stats b{display:block;font-size:16px;font-family:'Space Grotesk';color:var(--ink)}
+.mock-row{display:flex;align-items:center;gap:9px;padding:8px 4px;border-bottom:1px solid var(--line);font-size:11px}
+.mock-row .av{width:24px;height:24px;border-radius:50%;background:var(--soft);color:var(--teal);font-weight:800;font-size:9px;display:flex;align-items:center;justify-content:center}
+.mock-row .pillg{margin-left:auto;background:#E3F3E7;color:var(--green);font-size:9px;font-weight:800;padding:3px 8px;border-radius:99px}
+.mock-row .pillr{margin-left:auto;background:#FBE9E7;color:#B3261E;font-size:9px;font-weight:800;padding:3px 8px;border-radius:99px}
+
+/* ---------- PRICING CTA ---------- */
+.pricing{padding:90px 0;text-align:center}
+.price-card{max-width:620px;margin:0 auto;border:2px solid var(--teal);border-radius:26px;padding:46px 30px;background:linear-gradient(180deg,#fff,var(--bg))}
+.price-card .from{font-size:14px;font-weight:800;color:var(--sub)}
+.price-card .amt{font-size:54px;font-weight:700;font-family:'Space Grotesk';color:var(--teal);line-height:1.1}
+.price-card .per{color:var(--sub);font-size:14px;font-weight:700}
+.price-card ul{list-style:none;margin:24px auto;display:inline-block;text-align:left}
+.price-card li{font-size:14px;padding:6px 0 6px 28px;position:relative;font-weight:600}
+.price-card li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:800}
+
+/* ---------- CONTACT ---------- */
+.contact{padding:90px 0;background:linear-gradient(160deg,var(--teal-dark),var(--teal) 65%,var(--teal-mid));color:#fff;text-align:center}
+.contact h2{font-size:clamp(26px,4vw,38px);font-weight:800}
+.contact p{opacity:.9;margin:14px auto 32px;max-width:480px;font-size:16px;line-height:1.6}
+.cbtns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.btn.wa{background:#25D366;color:#fff}
+.btn.wa:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.3)}
+.login-mini{margin-top:36px;font-size:13.5px}
+.login-mini input{padding:12px 16px;border-radius:12px 0 0 12px;border:none;font-family:inherit;font-size:14px;width:200px;outline:none}
+.login-mini button{padding:12px 18px;border-radius:0 12px 12px 0;border:none;background:var(--teal-dark);color:#fff;font-weight:800;font-family:inherit;cursor:pointer;font-size:13.5px}
+
+footer{background:var(--teal-dark);color:rgba(255,255,255,.8);padding:34px 0;font-size:13px}
+.footin{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+footer b{color:#fff}
 </style>
 </head>
 <body>
-<div class="badge">📍</div>
-<h1>Hamara<span>Staff</span></h1>
-<p class="tag">GPS-based attendance & field visit tracking for your on-ground teams — mobile app for staff, desktop panel for management, Excel reports for payroll.</p>
-<div class="feat">
-  <div>📍 GPS Attendance</div>
-  <div>🗂️ Visit Tasks & Reports</div>
-  <div>🖥️ Management Panel</div>
-  <div>✅ HOD Payroll Approval</div>
-  <div>📊 Excel Reports</div>
-  <div>🔐 1-Year Audit Data</div>
-</div>
-<a class="portal" href="medcy/">Client Portal Login →</a>
-<p class="cta">Want this for your company? Contact <a href="https://bharatgps.in">BharatGPS</a>, Visakhapatnam</p>
-<footer>© HamaraStaff · A BharatGPS product<br>hamarastaff.com</footer>
+
+<nav>
+ <div class="navin">
+  <a class="logo" href="#top"><span class="lg">📍</span>Hamara<span>Staff</span></a>
+  <div class="navlinks">
+   <a href="#how">How it works</a>
+   <a href="#features">Features</a>
+   <a href="#industries">Industries</a>
+   <a href="#pricing">Pricing</a>
+   <a href="#contact">Contact</a>
+  </div>
+  <a class="nav-cta" href="#contact">Client Login</a>
+ </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero" id="top">
+ <div class="wrap heroin">
+  <div>
+   <span class="pill">🇮🇳 Made for Indian field teams</span>
+   <h1>Know where your field staff <em>really</em> are — every single day.</h1>
+   <p>HamaraStaff is a GPS-based attendance and field-visit tracking system. Your staff mark attendance from the field, update every client visit with live location, and management sees it all — down to payroll-ready Excel reports.</p>
+   <div class="hero-ctas">
+    <a class="btn white" href="#contact">Get a Free Demo →</a>
+    <a class="btn glass" href="#how">See how it works</a>
+   </div>
+   <div class="hero-trust">Trusted by hospitals & field-force businesses · No hardware needed · Works on any Android phone</div>
+  </div>
+  <div class="phone-zone">
+   <div class="float-card fc1"><div class="ic" style="background:#E3F3E7">✅</div><div>Present<small>GPS verified · 09:02 am</small></div></div>
+   <div class="float-card fc2"><div class="ic" style="background:#E4EEFA">📍</div><div>Reached Apollo Clinic<small>17.7215, 83.3229</small></div></div>
+   <div class="float-card fc3"><div class="ic" style="background:#FFF3E0">📊</div><div>Excel Report<small>Ready for payroll</small></div></div>
+   <div class="phone">
+    <div class="scr">
+     <div class="top"><span class="av">RK</span>Ravi Kumar · Field Staff</div>
+     <div class="body">
+      <div class="daychip">DAY STARTED<b class="num">09:02 am</b>
+       <span class="gps"><span class="dot"></span>Dwaraka Nagar · GPS locked</span>
+      </div>
+      <div class="mini-task"><span class="st g">✓ CLOSED</span><b>Dr. K. Prasad</b><div class="mt">Apollo Clinic · Report emailed</div></div>
+      <div class="mini-task"><span class="st b">◉ REACHED</span><b>Care Hospital</b><div class="mt">Follow-up visit · 11:24 am</div></div>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+</header>
+
+<!-- STATS -->
+<section class="stats">
+ <div class="wrap statgrid">
+  <div class="stat rv"><div class="n" data-count="100">0</div><div class="l">% GPS-verified attendance</div></div>
+  <div class="stat rv"><div class="n num" data-count="365">0</div><div class="l">Days of audit data stored</div></div>
+  <div class="stat rv"><div class="n num" data-count="60">0</div><div class="l">Seconds to set up a new employee</div></div>
+  <div class="stat rv"><div class="n num" data-count="0">0</div><div class="l">Extra hardware required</div></div>
+ </div>
+</section>
+
+<!-- HOW -->
+<section class="how" id="how">
+ <div class="wrap">
+  <span class="eyebrow rv">Simple 4-step flow</span>
+  <h2 class="sec rv">How HamaraStaff works</h2>
+  <p class="sec-sub rv">Your team's entire field day — captured automatically from their phone. No registers, no phone calls, no guesswork.</p>
+  <div class="steps">
+   <div class="step rv"><span class="em">📲</span><div class="nb">1</div><b>Staff starts the day</b><p>Employee taps "Start My Day" on their phone. Time and GPS location are recorded — that's their attendance, marked Present automatically.</p></div>
+   <div class="step rv"><span class="em">📍</span><div class="nb">2</div><b>Visits are tracked live</b><p>Each client visit is a task. On arrival they tap "I've Reached" — the exact location and time are stamped on the visit trail.</p></div>
+   <div class="step rv"><span class="em">📝</span><div class="nb">3</div><b>Visit closed with report</b><p>After the meeting, staff fill a short form — person met, products discussed, client remarks — and the report is emailed to the client instantly.</p></div>
+   <div class="step rv"><span class="em">💼</span><div class="nb">4</div><b>HOD approves payroll</b><p>Management reviews the monthly GPS attendance on the desktop panel, approves it in one click, and downloads the Excel for payroll processing.</p></div>
+  </div>
+ </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+ <div class="wrap">
+  <span class="eyebrow rv">Everything included</span>
+  <h2 class="sec rv">One system. Full field-force control.</h2>
+  <p class="sec-sub rv">A mobile app for your staff, a professional desktop panel for management — connected to one secure database.</p>
+  <div class="fgrid">
+   <div class="f rv"><div class="ic">🛰️</div><b>GPS-Based Attendance</b><p>Present or Absent is decided by an actual GPS day-start from the field — with latitude, longitude and time stored as proof.</p></div>
+   <div class="f rv"><div class="ic">🗂️</div><b>Visit Task Management</b><p>Staff create their own visits, or managers assign them. Every task moves through Open → Reached → Closed with location stamps.</p></div>
+   <div class="f rv"><div class="ic">✉️</div><b>Auto Client Reports</b><p>When a visit is closed, a professional summary is emailed to your client automatically — with one-tap WhatsApp sharing too.</p></div>
+   <div class="f rv"><div class="ic">🖥️</div><b>Management Desktop Panel</b><p>Live dashboard for the office: who's present, who's in the field right now, every visit's full activity trail with client remarks.</p></div>
+   <div class="f rv"><div class="ic">📊</div><b>Payroll-Ready Excel</b><p>Daily attendance, complete activity log and monthly summary — downloadable as a formatted Excel file with HOD approval status.</p></div>
+   <div class="f rv"><div class="ic">🔐</div><b>1-Year Audit Storage</b><p>Every login, every location, every report is stored securely in the database for a full year — perfect for audits and disputes.</p></div>
+   <div class="f rv"><div class="ic">👥</div><b>Employee Control</b><p>Create staff logins with passwords in seconds. Disable an employee instantly to block access, or delete them — history stays for audit.</p></div>
+   <div class="f rv"><div class="ic">✅</div><b>HOD Payroll Approval</b><p>A dedicated monthly review screen where the Head of Department approves GPS attendance before it goes to payroll.</p></div>
+   <div class="f rv"><div class="ic">📱</div><b>No App Store Needed</b><p>Runs in the browser on any Android phone or PC. No installations, no updates, no compatibility issues — just a link and a login.</p></div>
+  </div>
+ </div>
+</section>
+
+<!-- INDUSTRIES -->
+<section class="inds" id="industries">
+ <div class="wrap">
+  <span class="eyebrow rv">Who is it for?</span>
+  <h2 class="sec rv">Built for every team that works outside the office</h2>
+  <p class="sec-sub rv">If your people visit clients, sites or customers — HamaraStaff keeps track of it.</p>
+  <div class="igrid">
+   <div class="ind rv"><span class="em">🏥</span><b>Hospitals & Pharma</b><span>Medical representatives</span></div>
+   <div class="ind rv"><span class="em">💼</span><b>Sales Teams</b><span>Field marketing executives</span></div>
+   <div class="ind rv"><span class="em">🔧</span><b>Service Companies</b><span>Technicians & installers</span></div>
+   <div class="ind rv"><span class="em">🚚</span><b>Distribution</b><span>Delivery & supply staff</span></div>
+   <div class="ind rv"><span class="em">🏦</span><b>Finance</b><span>Collection & verification agents</span></div>
+  </div>
+ </div>
+</section>
+
+<!-- PANEL SHOWCASE -->
+<section class="showcase">
+ <div class="wrap">
+  <span class="eyebrow rv">For management</span>
+  <h2 class="sec rv">Your office sees everything, live</h2>
+  <p class="sec-sub rv">The desktop panel gives management a real-time view of the entire field team — refreshed every minute.</p>
+  <div class="mock-panel rv">
+   <div class="mock-bar"><i></i><i></i><i></i></div>
+   <div class="mock-body">
+    <div class="mock-side">
+     <div class="on">📊 Dashboard</div><div>✅ Attendance</div><div>📋 Field Visits</div><div>🕒 Activity Trail</div><div>👥 Employees</div>
+    </div>
+    <div class="mock-main">
+     <div class="mock-stats">
+      <div><b class="num">18/20</b>Present Today</div>
+      <div><b class="num">6</b>On Field Now</div>
+      <div><b class="num">31</b>Visits Closed</div>
+      <div><b class="num">4</b>Open Tasks</div>
+     </div>
+     <div class="mock-row"><span class="av">RK</span><b>Ravi Kumar</b> · Started 09:02 am · Dwaraka Nagar<span class="pillg">✓ Present</span></div>
+     <div class="mock-row"><span class="av">PS</span><b>Priya Sharma</b> · Started 09:12 am · MVP Colony<span class="pillg">✓ Present</span></div>
+     <div class="mock-row"><span class="av">SB</span><b>Suresh Babu</b> · Day not started<span class="pillr">✗ Absent</span></div>
+    </div>
+   </div>
+  </div>
+ </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+ <div class="wrap">
+  <span class="eyebrow rv">Simple rental pricing</span>
+  <h2 class="sec rv">Pay per employee. Cancel anytime.</h2>
+  <p class="sec-sub rv">One-time setup with your company branding, then a simple monthly rental. No hidden costs.</p>
+  <div class="price-card rv">
+   <div class="from">STARTS FROM</div>
+   <div class="amt">₹150<span style="font-size:20px">/</span></div>
+   <div class="per">per employee · per month</div>
+   <ul>
+    <li>Your own branded portal — hamarastaff.com/yourcompany</li>
+    <li>Mobile app for staff + desktop panel for management</li>
+    <li>GPS attendance, visit reports & Excel downloads</li>
+    <li>Setup, hosting, support & updates included</li>
+   </ul>
+   <a class="btn white" style="background:var(--teal);color:#fff" href="#contact">Request Pricing for Your Team →</a>
+  </div>
+ </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+ <div class="wrap">
+  <h2 class="rv">See it live with your own team</h2>
+  <p class="rv">Get a free demo with your company name on it. We'll set up your portal, add your employees, and you can test it in the field the same day.</p>
+  <div class="cbtns rv">
+   <a class="btn wa" href="https://wa.me/919999999999?text=Hi%2C%20I%20want%20a%20demo%20of%20HamaraStaff%20for%20my%20team" target="_blank">💬 WhatsApp Us for a Demo</a>
+   <a class="btn glass" href="tel:+919999999999">📞 Call Us</a>
+  </div>
+  <div class="login-mini rv">
+   <div style="margin-bottom:10px;font-weight:700;opacity:.9">Already a client? Enter your company code:</div>
+   <input id="ccode" placeholder="e.g. medcy" onkeydown="if(event.key==='Enter')goPortal()">
+   <button onclick="goPortal()">Login →</button>
+  </div>
+ </div>
+</section>
+
+<footer>
+ <div class="wrap footin">
+  <div><b>📍 HamaraStaff</b> — GPS Attendance & Field Staff Tracking<br>A <b>BharatGPS</b> product · Visakhapatnam, India</div>
+  <div>hamarastaff.com · © 2026 All rights reserved</div>
+ </div>
+</footer>
+
+<script>
+/* reveal on scroll */
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+/* animated counters */
+const cio=new IntersectionObserver(es=>es.forEach(e=>{
+ if(!e.isIntersecting)return;cio.unobserve(e.target);
+ const el=e.target,end=parseInt(el.dataset.count),t0=performance.now();
+ const step=t=>{const p=Math.min((t-t0)/1200,1);el.textContent=Math.round(end*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(step)};
+ requestAnimationFrame(step);
+}),{threshold:.6});
+document.querySelectorAll('[data-count]').forEach(el=>cio.observe(el));
+
+/* client portal code */
+function goPortal(){
+ const c=document.getElementById('ccode').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'');
+ if(!c)return;
+ location.href='/'+c+'/';
+}
+</script>
 </body>
 </html>
