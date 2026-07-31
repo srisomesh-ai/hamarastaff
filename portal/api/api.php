@@ -243,6 +243,10 @@ case 'admin_overview': {
 
 case 'emp_add': {
   requireAdmin();
+  if(PLAN==='trial'){
+    $cnt=$db->query("SELECT COUNT(*) c FROM hs_employees")->fetch()['c'];
+    if($cnt>=10) fail('Trial accounts can have up to 10 employees. Activate a plan to add your full team.');
+  }
   $c=trim($in['emp_code']??''); $n=trim($in['name']??''); $p=trim($in['password']??'');
   if(!$c||!$n||!$p) fail('missing');
   $ck=$db->prepare("SELECT 1 FROM hs_employees WHERE LOWER(emp_code)=LOWER(?)"); $ck->execute([$c]);
