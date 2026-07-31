@@ -342,6 +342,7 @@ function getLocation(cb){
 function pillHTML(st){return `<span class="pill ${st}">${st==='open'?'● Open':st==='reached'?'◉ Reached':'✓ Closed'}</span>`}
 
 let ME=null, MYDAY=null, TASKS=[], empF='all', curTask=null;
+function dayActive(){return MYDAY && !MYDAY.endedAt}
 
 async function boot(){
  try{ME=await api('me')}catch(e){return}
@@ -399,8 +400,8 @@ function taskCard(t){
 }
 function startDay(){getLocation(async loc=>{
  try{MYDAY=await api('day_start',loc);toast('Day started — time & location saved ✓');renderEmp()}
- catch(e){toast('Could not save — try again')}})}
-async function endDay(){try{MYDAY=await api('day_end');toast('Day ended. Good work! 🏁');renderEmp()}catch(e){toast('Could not save — try again')}}
+ catch(e){toast(e.message&&e.message.length>12?e.message:'Could not save — try again')}})}
+async function endDay(){try{MYDAY=await api('day_end');toast('Day ended. Good work! 🏁');renderEmp()}catch(e){toast(e.message&&e.message.length>12?e.message:'Could not save — try again')}}
 
 /* ---- new task ---- */
 function openNewTask(){['ntDoctor','ntHospital','ntArea','ntEmail','ntPhone'].forEach(i=>$(i).value='');show('newTask')}
@@ -410,7 +411,7 @@ async function saveNewTask(){
  try{
   await api('task_add',{doctor:$('ntDoctor').value,hospital:$('ntHospital').value,area:$('ntArea').value,purpose:$('ntPurpose').value,planned:$('ntTime').value,email:$('ntEmail').value,phone:$('ntPhone').value});
   toast('Visit task saved ✓');history.back();await refresh();
- }catch(e){toast('Could not save — try again')}
+ }catch(e){toast(e.message&&e.message.length>12?e.message:'Could not save — try again')}
 }
 
 /* ---- task detail ---- */
@@ -432,15 +433,19 @@ function renderTaskDetail(){
    <div class="meta" style="font-size:13.5px;color:var(--sub);line-height:1.6">${t.hospital||'—'} · ${t.area||'—'}<br>${t.purpose} · Planned ${t.planned||'—'}<br>✉️ ${t.email||'no email'} · 📱 ${t.phone||'no WhatsApp'}</div>
   </div>
   ${t.timeline.length?`<div class="card"><h3>Activity Trail</h3><div class="trail">${t.timeline.map(trItem).join('')}</div></div>`:''}
-  ${t.status==='open'?`<button class="btn blue" onclick="markReached()">📍 I've Reached — Update Location</button>`:''}
-  ${t.status==='reached'?`<button class="btn green" onclick="openVisitForm()">📝 Fill Visit Form &amp; Close</button>`:''}
+  ${t.status==='open'?(dayActive()
+    ?`<button class="btn blue" onclick="markReached()">📍 I've Reached — Update Location</button>`
+    :`<button class="btn ghost" onclick="toast(MYDAY&&MYDAY.endedAt?'Your day has ended — visits cannot be updated':'Start your day first from the Home tab')" style="color:var(--sub)">🔒 Start your day to mark Reached</button>`):''}
+  ${t.status==='reached'?(dayActive()
+    ?`<button class="btn green" onclick="openVisitForm()">📝 Fill Visit Form &amp; Close</button>`
+    :`<button class="btn ghost" onclick="toast(MYDAY&&MYDAY.endedAt?'Your day has ended — visits cannot be updated':'Start your day first from the Home tab')" style="color:var(--sub)">🔒 Start your day to close this visit</button>`):''}
   ${t.status==='closed'?`<div class="sendline">✓ Task closed at ${t.report?t.report.closedAt:''} · Report ${t.report&&t.report.sent.length?t.report.sent.join(' + '):'saved'}</div>`:''}
  `;
 }
 function markReached(){
  getLocation(async loc=>{
   try{await api('task_reach',{id:curTask.id,...loc});toast('Reached location saved ✓');await refresh()}
-  catch(e){toast('Could not save — try again')}
+  catch(e){toast(e.message&&e.message.length>12?e.message:'Could not save — try again')}
  });
 }
 
@@ -474,7 +479,7 @@ function submitVisit(){
     window.open('https://wa.me/'+curTask.phone.replace(/[^0-9]/g,'')+'?text='+txt,'_blank');
    }
    await refresh();history.back();
-  }catch(e){toast('Could not save — try again')}
+  }catch(e){toast(e.message&&e.message.length>12?e.message:'Could not save — try again')}
  };
  if($('vfLocSw').classList.contains('on'))getLocation(finish);else finish(null);
 }

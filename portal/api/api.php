@@ -8,6 +8,13 @@ function fail($err,$code=400){ http_response_code($code); echo json_encode(['ok'
 function fmt($dt){ return $dt ? date('h:i a', strtotime($dt)) : null; }
 function initials($name){ $p=preg_split('/\s+/',trim($name)); $i=''; foreach(array_slice($p,0,2) as $w) $i.=strtoupper(substr($w,0,1)); return $i?:'?'; }
 function audit($actor,$action,$details=''){ try{ db()->prepare("INSERT INTO hs_audit_log (actor,action,details) VALUES (?,?,?)")->execute([$actor,$action,$details]); }catch(Exception $e){} }
+function requireDayStarted($eid){
+  $st=db()->prepare("SELECT end_time FROM hs_attendance WHERE emp_id=? AND att_date=?");
+  $st->execute([$eid,date('Y-m-d')]); $d=$st->fetch();
+  if(!$d) fail('Please start your day first (Home > Start My Day) before updating visits.');
+  if($d['end_time']!==null) fail('Your day has already ended. Visits cannot be updated after End My Day.');
+}
+
 function requireEmp(){ if(($_SESSION['role']??'')!=='emp' || ($_SESSION['tenant']??'')!==CODE) fail('auth',401); return (int)$_SESSION['emp_id']; }
 function requireAdmin(){ if(PLAN==='starter' || ($_SESSION['role']??'')!=='admin' || ($_SESSION['tenant']??'')!==CODE) fail('auth',401); }
 function actorName(){ return ($_SESSION['role']??'')==='admin' ? 'Admin' : ($_SESSION['emp_name'] ?? 'Unknown'); }
@@ -153,7 +160,7 @@ case 'task_add': {
 }
 
 case 'task_reach': {
-  $eid=requireEmp(); $tid=(int)($in['id']??0);
+  $eid=requireEmp(); requireDayStarted($eid); $tid=(int)($in['id']??0);
   $st=$db->prepare("SELECT * FROM hs_tasks WHERE id=? AND emp_id=?"); $st->execute([$tid,$eid]);
   $t=$st->fetch(); if(!$t) fail('notfound',404);
   if($t['status']!=='open') fail('wrong_status');
@@ -165,7 +172,7 @@ case 'task_reach': {
 }
 
 case 'task_close': {
-  $eid=requireEmp(); $tid=(int)($in['id']??0);
+  $eid=requireEmp(); requireDayStarted($eid); $tid=(int)($in['id']??0);
   $st=$db->prepare("SELECT * FROM hs_tasks WHERE id=? AND emp_id=?"); $st->execute([$tid,$eid]);
   $t=$st->fetch(); if(!$t) fail('notfound',404);
   if($t['status']==='closed') fail('wrong_status');
