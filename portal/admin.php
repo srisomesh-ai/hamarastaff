@@ -130,13 +130,15 @@ tbody tr.click:hover{background:var(--teal-soft)}
 .mobile-note{display:none}
 @media(max-width:900px){
  .app{grid-template-columns:1fr}
- .sidebar{position:sticky;top:0;height:auto;z-index:40;flex-direction:column}
- .brand{padding:12px 16px;border-bottom:none}
- .brand .b-ic{width:34px;height:34px;font-size:17px}
- .brand b{font-size:14px}.brand span{font-size:10.5px}
- .nav{display:flex;padding:0 8px 10px;flex:none;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:4px}
- .nav button{margin:0;padding:9px 12px;font-size:12px;white-space:nowrap;flex:0 0 auto}
- .nav .i{font-size:15px;width:auto}
+ .sidebar{position:sticky;top:0;height:auto;z-index:40;flex-direction:column;display:block}
+ .brand{padding:10px 14px;border-bottom:none;display:flex}
+ .brand .b-ic{width:32px;height:32px;font-size:16px}
+ .brand b{font-size:13.5px}.brand span{font-size:10px}
+ .nav{display:flex;flex-direction:row;padding:0 10px 10px;flex:none;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:6px;scrollbar-width:none}
+ .nav::-webkit-scrollbar{display:none}
+ .nav button{width:auto;margin:0;padding:8px 13px;font-size:12px;white-space:nowrap;flex:0 0 auto;border-radius:99px;background:rgba(255,255,255,.12)}
+ .nav button.on{background:#fff}
+ .nav .i{font-size:14px;width:auto}
  .me{display:none}
  .main{padding:14px 12px}
  .pagehead{flex-wrap:wrap;gap:10px;margin-bottom:14px}
@@ -144,9 +146,9 @@ tbody tr.click:hover{background:var(--teal-soft)}
  .pagehead .date{font-size:12px}
  .pagehead .btn{padding:9px 13px;font-size:12.5px}
  .stats{grid-template-columns:1fr 1fr;gap:10px}
- .stat{padding:13px 14px;gap:10px}
- .stat .ic{width:38px;height:38px;font-size:17px}
- .stat .n{font-size:20px}
+ .stat{padding:12px 13px;gap:10px}
+ .stat .ic{width:36px;height:36px;font-size:16px}
+ .stat .n{font-size:19px}
  .grid2{grid-template-columns:1fr}
  .card{padding:14px;overflow-x:auto}
  .card table{min-width:560px}
@@ -157,8 +159,8 @@ tbody tr.click:hover{background:var(--teal-soft)}
  .report-grid{grid-template-columns:1fr;gap:2px 0}
  .report-grid dt{margin-top:8px}
  select{max-width:150px}
- .mobile-note{display:none}
-}</style>
+}
+</style>
 </head>
 <body>
 <?php if (PLAN !== 'trial' && PLAN_ENDS !== '' && !SUB_EXPIRED && SUB_DAYS_LEFT <= 7): ?>
@@ -544,13 +546,12 @@ function renderBilling(){
    <div style="font-size:26px;font-weight:700;font-family:'Space Grotesk';color:var(--teal);margin:6px 0 2px">₹${rate}<span style="font-size:13px;color:var(--sub)"> /employee/month</span></div>
    <div class="muted" style="font-size:12.5px;margin-bottom:10px">${desc}</div>
    <div style="font-size:12.5px;line-height:2">${feats.map(x=>'✓ '+x).join('<br>')}</div>
-   <div style="font-size:11.5px;font-weight:800;color:var(--amber);background:var(--amber-soft);border-radius:9px;padding:6px 10px;margin-top:10px">Minimum ${MIN_EMPS[rate]} employees · ₹${rate*MIN_EMPS[rate]}/month minimum${rate===250?' · +₹250 per extra employee':''}</div>
    ${active?'<div class="pill present" style="margin-top:12px">✓ Currently Active</div>'
     :`<button class="btn primary" style="margin-top:12px;width:100%;justify-content:center" onclick="openPay(${rate},'${title.replace(/'/g,'')}')">Pay ₹${billedInfo(rate).amt} &amp; Activate</button>`}
   </div>`;
  $('planCards').innerHTML=
-  plan(150,'Starter','Mobile app for field staff',['GPS attendance & visit tasks','Visit reports emailed to clients','Excel reports'],HS_PLAN==='starter')+
-  plan(250,'Professional','Mobile app + this desktop panel',['Everything in Starter','Desktop management panel','HOD payroll approval','Priority support'],HS_PLAN==='professional');
+  plan(150,'Starter','Mobile app for field staff',['GPS attendance & visit tasks','Visit reports emailed to clients','Excel reports','Minimum 10 employees — ₹1,500/month'],HS_PLAN==='starter')+
+  plan(250,'Professional','Mobile app + this desktop panel',['Everything in Starter','Desktop management panel','HOD payroll approval','Priority support','Minimum billing ₹5,000/month (20 employees)','+₹250 per additional employee above 20'],HS_PLAN==='professional');
 }
 function openPay(rate,title){
  const {n,min,bn,amt}=billedInfo(rate);
