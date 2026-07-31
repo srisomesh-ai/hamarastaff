@@ -129,12 +129,14 @@ tbody tr.click:hover{background:var(--teal-soft)}
 .hod-banner p{font-size:12.5px;color:var(--teal-dark);margin-top:2px}
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:700;opacity:0;transition:.25s;z-index:99;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
+.hdr-logout{display:none;background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:10px;padding:8px 10px;cursor:pointer;align-items:center;flex-shrink:0}
 .bottombar{display:none}
 .mobile-note{display:none}
 @media(max-width:900px){
  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr;align-content:start}
  .sidebar{position:static;height:auto;z-index:40;flex-direction:column;display:block}
- .brand{padding:10px 14px;border-bottom:none;display:flex}
+ .brand{padding:10px 14px;border-bottom:none;display:flex;align-items:center;gap:10px}
+ .hdr-logout{display:flex}
  .brand .b-ic{width:32px;height:32px;font-size:16px}
  .brand b{font-size:13.5px}.brand span{font-size:10px}
  .nav{display:none}
@@ -191,7 +193,10 @@ tbody tr.click:hover{background:var(--teal-soft)}
 <aside class="sidebar">
   <div class="brand">
     <div class="b-ic"><?php if (client_logo_exists()): ?><img src="<?= CLIENT_LOGO_URL ?>?v=<?= filemtime(CLIENT_LOGO_FILE) ?>" alt="" style="width:34px;height:34px;object-fit:contain"><?php else: ?>🏥<?php endif; ?></div>
-    <div><b><?= $CN ?></b><span>Management Panel</span></div>
+    <div style="flex:1;min-width:0"><b><?= $CN ?></b><span>Management Panel</span></div>
+    <button class="hdr-logout" onclick="fetch('api/api.php',{method:'POST',body:JSON.stringify({action:'logout'})}).finally(()=>location.href='index.html')" title="Logout">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+    </button>
   </div>
   <nav class="nav">
     <button class="on" data-pg="dash" onclick="go('dash')"><span class="i"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span>Dashboard</button>
@@ -202,8 +207,8 @@ tbody tr.click:hover{background:var(--teal-soft)}
     <button data-pg="billing" onclick="go('billing')"><span class="i"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg></span>Plan &amp; Billing</button>
   </nav>
   <div class="me">
-    <div class="avatar">AP</div>
-    <div style="flex:1"><b>Aparna.P</b><span>HOD · Marketing</span></div>
+    <div class="avatar">AD</div>
+    <div style="flex:1"><b>Administrator</b><span><?= $CN ?></span></div>
     <button onclick="fetch('api/api.php',{method:'POST',body:JSON.stringify({action:'logout'})}).finally(()=>location.href='index.html')" style="color:#fff;background:rgba(255,255,255,.15);padding:8px 12px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer">Logout</button>
   </div>
 </aside>
