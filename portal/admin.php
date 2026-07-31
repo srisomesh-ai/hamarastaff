@@ -353,6 +353,10 @@ function locTxt(l){return l&&l.lat?`<span class="loc">${l.area} (${l.lat}, ${l.l
 function trItem(x){return `<div class="tr-item ${x.type==='start'?'start':x.type==='close'?'close':''}"><div class="tr-time">${x.t||x.time}</div><div class="tr-main">${x.main||x.text}</div>${x.loc&&x.loc.lat?`<div class="tr-sub">📍 ${locTxt(x.loc)}</div>`:''}${x.note?`<div class="remark-box">"${x.note}"</div>`:''}</div>`}
 
 let D=null, showPw={};
+function attPill(e){
+ if(e.day)return '<span class="pill present">✓ Present</span>';
+ return D&&D.noonPassed?'<span class="pill absent">✗ Absent</span>':'<span class="pill" style="background:#EEF2F1;color:var(--sub)">— Not Marked</span>';
+}
 
 async function boot(){
  try{const me=await api('me');if(me.role!=='admin'){location.href='./';return}}
@@ -378,7 +382,7 @@ function render(){
   <div class="stat"><div class="ic" style="background:var(--amber-soft)">⏳</div><div><div class="n" style="color:var(--amber)">${open}</div><div class="l">Open Tasks</div></div></div>`;
  $('teamRows').innerHTML=D.employees.map(e=>`<tr>
   <td><div class="ename"><div class="avatar">${e.init}</div>${e.name}</div></td>
-  <td data-label="Attendance">${e.day?'<span class="pill present">✓ Present</span>':'<span class="pill absent">✗ Absent</span>'}</td>
+  <td data-label="Attendance">${attPill(e)}</td>
   <td data-label="Day Start" class="num">${e.day?e.day.startedAt:'—'}</td><td data-label="Location">${e.day?locTxt(e.day.startLoc):'—'}</td>
   <td data-label="Visits" class="num">${e.visitsClosed}/${e.visitsTotal}</td></tr>`).join('');
  $('feed').innerHTML=D.feed.length?D.feed.map(trItem).join(''):'<span class="muted">No activity yet today.</span>';
@@ -386,7 +390,7 @@ function render(){
  /* attendance */
  $('attRows').innerHTML=D.employees.map(e=>`<tr>
   <td><div class="ename"><div class="avatar">${e.init}</div>${e.name}</div></td>
-  <td data-label="Status">${e.day?'<span class="pill present">✓ Present</span>':'<span class="pill absent">✗ Absent</span>'}</td>
+  <td data-label="Status">${attPill(e)}</td>
   <td data-label="Day Start" class="num">${e.day?e.day.startedAt:'—'}</td><td data-label="Start Location">${e.day?locTxt(e.day.startLoc):'—'}</td>
   <td data-label="Day End" class="num">${e.day&&e.day.endedAt?e.day.endedAt:'<span class="muted">—</span>'}</td></tr>`).join('');
  document.querySelector('#hodBanner b').textContent=`Monthly Review — ${D.monthLabel} · ${D.workingDays} working days`;
@@ -432,7 +436,7 @@ function renderActivity(){
  const mine=D.tasks.filter(t=>t.empId===eid);
  const m=D.monthly.find(x=>x.name===e.name)||{present:0,wd:D.workingDays};
  $('empSummary').innerHTML=`<dl class="report-grid">
-  <dt>Attendance</dt><dd>${e.day?'Present ✓':'Absent'}</dd>
+  <dt>Attendance</dt><dd>${e.day?'Present ✓':(D.noonPassed?'Absent':'Not Marked yet')}</dd>
   <dt>Day start</dt><dd class="num">${e.day?e.day.startedAt:'—'}</dd>
   <dt>Start location</dt><dd>${e.day?locTxt(e.day.startLoc):'—'}</dd>
   <dt>Total visits</dt><dd class="num">${mine.length}</dd>
@@ -633,7 +637,7 @@ function downloadExcel(){
  if(!D)return;
  const today=new Date().toLocaleDateString('en-IN');
  const att=[["Date","Employee","Attendance","Day Start","Start Location","Day End"]];
- D.employees.forEach(e=>{const d=e.day;att.push([today,e.name,d?'Present':'Absent',d?d.startedAt:'-',d?`${d.startLoc.area} (${d.startLoc.lat}, ${d.startLoc.lng})`:'-',d&&d.endedAt?d.endedAt:'-'])});
+ D.employees.forEach(e=>{const d=e.day;att.push([today,e.name,d?'Present':(D.noonPassed?'Absent':'Not Marked'),d?d.startedAt:'-',d?`${d.startLoc.area} (${d.startLoc.lat}, ${d.startLoc.lng})`:'-',d&&d.endedAt?d.endedAt:'-'])});
  const act=[["Date","Employee","Client / Doctor","Hospital","Purpose","Task Status","Reached At","Reached Location","Closed At","Outcome","Client Remarks","Report Sent Via"]];
  D.tasks.forEach(t=>{const r=t.timeline.find(x=>x.type==='reach');const c=t.timeline.find(x=>x.type==='close');
   act.push([t.createdAt?t.createdAt.slice(0,10):today,t.empName,t.doctor,t.hospital,t.purpose,t.status.toUpperCase(),r?r.t:'-',r&&r.loc&&r.loc.lat?`${r.loc.area} (${r.loc.lat}, ${r.loc.lng})`:'-',c?c.t:'-',t.report?t.report.outcome:'-',t.report?t.report.remarks:'-',t.report&&t.report.sent.length?t.report.sent.join(' + '):'-'])});

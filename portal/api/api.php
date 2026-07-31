@@ -244,7 +244,7 @@ case 'admin_overview': {
   usort($feed,fn($a,$b)=>strcmp($b['dt'],$a['dt']));
   $feed=array_map(fn($f)=>['time'=>fmt($f['dt']),'type'=>$f['type'],'text'=>$f['text']],array_slice($feed,0,15));
   $ap=$db->prepare("SELECT 1 FROM hs_approvals WHERE ym=?"); $ap->execute([$ym]);
-  out(['employees'=>$E,'tasks'=>$tasks,'feed'=>$feed,'monthly'=>$M,'workingDays'=>$wd,
+  out(['employees'=>$E,'tasks'=>$tasks,'feed'=>$feed,'monthly'=>$M,'workingDays'=>$wd,'noonPassed'=>((int)date('G')>=12),
     'approved'=>(bool)$ap->fetch(),'monthLabel'=>date('F Y'),'todayLabel'=>date('l, j F Y')]);
 }
 
