@@ -127,6 +127,7 @@ tbody tr.click:hover{background:var(--teal-soft)}
 .hod-banner p{font-size:12.5px;color:var(--teal-dark);margin-top:2px}
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-size:13.5px;font-weight:700;opacity:0;transition:.25s;z-index:99;pointer-events:none}
 .toast.show{opacity:1;transform:translateX(-50%)}
+.bottombar{display:none}
 .mobile-note{display:none}
 @media(max-width:900px){
  .app{grid-template-columns:1fr}
@@ -134,13 +135,13 @@ tbody tr.click:hover{background:var(--teal-soft)}
  .brand{padding:10px 14px;border-bottom:none;display:flex}
  .brand .b-ic{width:32px;height:32px;font-size:16px}
  .brand b{font-size:13.5px}.brand span{font-size:10px}
- .nav{display:flex;flex-direction:row;padding:0 10px 10px;flex:none;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:6px;scrollbar-width:none}
- .nav::-webkit-scrollbar{display:none}
- .nav button{width:auto;margin:0;padding:8px 13px;font-size:12px;white-space:nowrap;flex:0 0 auto;border-radius:99px;background:rgba(255,255,255,.12)}
- .nav button.on{background:#fff}
- .nav .i{font-size:14px;width:auto}
+ .nav{display:none}
  .me{display:none}
- .main{padding:14px 12px}
+ .bottombar{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:60;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
+ .bottombar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:800;color:var(--sub);background:none;border:none;padding:5px 2px;cursor:pointer;font-family:inherit}
+ .bottombar button.on{color:var(--teal)}
+ .bottombar .i{font-size:19px}
+ .main{padding:14px 12px 100px}
  .pagehead{flex-wrap:wrap;gap:10px;margin-bottom:14px}
  .pagehead h1{font-size:18px}
  .pagehead .date{font-size:12px}
@@ -150,15 +151,23 @@ tbody tr.click:hover{background:var(--teal-soft)}
  .stat .ic{width:36px;height:36px;font-size:16px}
  .stat .n{font-size:19px}
  .grid2{grid-template-columns:1fr}
- .card{padding:14px;overflow-x:auto}
- .card table{min-width:560px}
- #billing .card table{min-width:0}
- #curPlanCard .card,#planCards .card{overflow-x:visible}
+ .card{padding:14px}
+ /* tables become mobile cards */
+ .card table,.card tbody,.card tr,.card td{display:block;width:100%}
+ .card thead{display:none}
+ .card tbody tr{border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-bottom:10px;background:#fff}
+ .card tbody tr:last-child{margin-bottom:0}
+ .card td{border:none;padding:5px 0;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:13px;text-align:right}
+ .card td[data-label]::before{content:attr(data-label);font-size:10.5px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;text-align:left;flex-shrink:0}
+ .card td:first-child{padding-bottom:8px;border-bottom:1px dashed var(--line);margin-bottom:4px;justify-content:flex-start;text-align:left}
+ .card td[data-label="Actions"]{justify-content:flex-end}
+ tbody tr.click:hover{background:#fff}
+ tbody tr.click:active{background:var(--teal-soft)}
  .modal{padding:18px}
  .overlay{padding:16px 10px}
  .report-grid{grid-template-columns:1fr;gap:2px 0}
  .report-grid dt{margin-top:8px}
- select{max-width:150px}
+ select{max-width:160px}
 }
 </style>
 </head>
@@ -183,12 +192,12 @@ tbody tr.click:hover{background:var(--teal-soft)}
     <div><b><?= $CN ?></b><span>Management Panel</span></div>
   </div>
   <nav class="nav">
-    <button class="on" onclick="go('dash',this)"><span class="i">📊</span>Dashboard</button>
-    <button onclick="go('att',this)"><span class="i">✅</span>Attendance</button>
-    <button onclick="go('visits',this)"><span class="i">📋</span>Field Visits</button>
-    <button onclick="go('activity',this)"><span class="i">🕒</span>Activity Trail</button>
-    <button onclick="go('emps',this)"><span class="i">👥</span>Employees</button>
-    <button onclick="go('billing',this)"><span class="i">💳</span>Plan &amp; Billing</button>
+    <button class="on" data-pg="dash" onclick="go('dash')"><span class="i">📊</span>Dashboard</button>
+    <button data-pg="att" onclick="go('att')"><span class="i">✅</span>Attendance</button>
+    <button data-pg="visits" onclick="go('visits')"><span class="i">📋</span>Field Visits</button>
+    <button data-pg="activity" onclick="go('activity')"><span class="i">🕒</span>Activity Trail</button>
+    <button data-pg="emps" onclick="go('emps')"><span class="i">👥</span>Employees</button>
+    <button data-pg="billing" onclick="go('billing')"><span class="i">💳</span>Plan &amp; Billing</button>
   </nav>
   <div class="me">
     <div class="avatar">AP</div>
@@ -299,6 +308,15 @@ tbody tr.click:hover{background:var(--teal-soft)}
     <p style="font-size:12.5px;color:var(--sub);line-height:1.7;margin-top:6px">Payments go to <b>Hamara Staff</b> via UPI. After paying, send the payment screenshot to <b>info@hamarastaff.com</b> or WhatsApp — your plan is activated the same day.</p>
   </section>
 </main>
+
+<nav class="bottombar">
+  <button class="on" data-pg="dash" onclick="go('dash')"><span class="i">📊</span>Home</button>
+  <button data-pg="att" onclick="go('att')"><span class="i">✅</span>Attend</button>
+  <button data-pg="visits" onclick="go('visits')"><span class="i">📋</span>Visits</button>
+  <button data-pg="activity" onclick="go('activity')"><span class="i">🕒</span>Trail</button>
+  <button data-pg="emps" onclick="go('emps')"><span class="i">👥</span>Staff</button>
+  <button data-pg="billing" onclick="go('billing')"><span class="i">💳</span>Plan</button>
+</nav>
 </div>
 
 <!-- report modal -->
@@ -339,7 +357,7 @@ async function loadAll(quiet){
  try{D=await api('admin_overview');render()}
  catch(e){if(!quiet)toast('Could not load data: '+e.message)}
 }
-function go(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));$(id).classList.add('on');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('on'));btn.classList.add('on');if(D)render()}
+function go(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));$(id).classList.add('on');document.querySelectorAll('.nav button,.bottombar button').forEach(b=>b.classList.toggle('on',b.dataset.pg===id));if(D)render();window.scrollTo(0,0)}
 
 function render(){
  if(!D)return;
@@ -353,17 +371,17 @@ function render(){
   <div class="stat"><div class="ic" style="background:var(--amber-soft)">⏳</div><div><div class="n" style="color:var(--amber)">${open}</div><div class="l">Open Tasks</div></div></div>`;
  $('teamRows').innerHTML=D.employees.map(e=>`<tr>
   <td><div class="ename"><div class="avatar">${e.init}</div>${e.name}</div></td>
-  <td>${e.day?'<span class="pill present">✓ Present</span>':'<span class="pill absent">✗ Absent</span>'}</td>
-  <td class="num">${e.day?e.day.startedAt:'—'}</td><td>${e.day?locTxt(e.day.startLoc):'—'}</td>
-  <td class="num">${e.visitsClosed}/${e.visitsTotal}</td></tr>`).join('');
+  <td data-label="Attendance">${e.day?'<span class="pill present">✓ Present</span>':'<span class="pill absent">✗ Absent</span>'}</td>
+  <td data-label="Day Start" class="num">${e.day?e.day.startedAt:'—'}</td><td data-label="Location">${e.day?locTxt(e.day.startLoc):'—'}</td>
+  <td data-label="Visits" class="num">${e.visitsClosed}/${e.visitsTotal}</td></tr>`).join('');
  $('feed').innerHTML=D.feed.length?D.feed.map(trItem).join(''):'<span class="muted">No activity yet today.</span>';
 
  /* attendance */
  $('attRows').innerHTML=D.employees.map(e=>`<tr>
   <td><div class="ename"><div class="avatar">${e.init}</div>${e.name}</div></td>
-  <td>${e.day?'<span class="pill present">✓ Present</span>':'<span class="pill absent">✗ Absent</span>'}</td>
-  <td class="num">${e.day?e.day.startedAt:'—'}</td><td>${e.day?locTxt(e.day.startLoc):'—'}</td>
-  <td class="num">${e.day&&e.day.endedAt?e.day.endedAt:'<span class="muted">—</span>'}</td></tr>`).join('');
+  <td data-label="Status">${e.day?'<span class="pill present">✓ Present</span>':'<span class="pill absent">✗ Absent</span>'}</td>
+  <td data-label="Day Start" class="num">${e.day?e.day.startedAt:'—'}</td><td data-label="Start Location">${e.day?locTxt(e.day.startLoc):'—'}</td>
+  <td data-label="Day End" class="num">${e.day&&e.day.endedAt?e.day.endedAt:'<span class="muted">—</span>'}</td></tr>`).join('');
  document.querySelector('#hodBanner b').textContent=`Monthly Review — ${D.monthLabel} · ${D.workingDays} working days`;
  document.querySelector('#att .card:last-of-type h3').textContent=`Monthly Summary — ${D.monthLabel}`;
  $('monRows').innerHTML=D.monthly.map(m=>`<tr>
@@ -380,9 +398,9 @@ function render(){
  $('visitRows').innerHTML=list.map(t=>{const r=t.timeline.find(x=>x.type==='reach');const c=t.timeline.find(x=>x.type==='close');
   return `<tr class="click" onclick="openReport(${t.id})">
   <td><div class="ename"><div class="avatar">${t.empInit}</div>${t.empName}</div></td>
-  <td style="font-weight:700">${t.doctor}</td><td>${t.hospital||'—'}</td><td class="muted">${t.purpose}</td>
-  <td>${pill(t.status)}</td><td class="num">${r?r.t:'—'}</td><td class="num">${c?c.t:'—'}</td>
-  <td>${t.report?(t.report.sent.length?'📤 '+t.report.sent.join(' + '):'Saved'):'<span class="muted">—</span>'}</td></tr>`}).join('')
+  <td data-label="Client" style="font-weight:700">${t.doctor}</td><td data-label="Hospital">${t.hospital||'—'}</td><td data-label="Purpose" class="muted">${t.purpose}</td>
+  <td data-label="Status">${pill(t.status)}</td><td data-label="Reached" class="num">${r?r.t:'—'}</td><td data-label="Closed" class="num">${c?c.t:'—'}</td>
+  <td data-label="Report">${t.report?(t.report.sent.length?'📤 '+t.report.sent.join(' + '):'Saved'):'<span class="muted">—</span>'}</td></tr>`}).join('')
   ||'<tr><td colspan="8" class="muted" style="text-align:center;padding:26px">No visits in this status.</td></tr>';
 
  /* activity */
@@ -422,11 +440,11 @@ function renderEmps(){
  const el=$('empRows'); if(!el)return;
  el.innerHTML=D.employees.map(e=>`<tr>
    <td><div class="ename"><div class="avatar">${e.init}</div>${e.name}</div></td>
-   <td class="num">${e.emp_code}</td>
-   <td class="num">${showPw[e.id]?e.pw:'••••••••'} <button onclick="showPw[${e.id}]=!showPw[${e.id}];renderEmps()" title="Show / hide" style="cursor:pointer;font-size:13px">👁</button></td>
-   <td class="muted">${e.area||'—'}</td>
-   <td>${e.active?'<span class="pill present">✓ Active</span>':'<span class="pill absent">✗ Disabled</span>'}</td>
-   <td style="text-align:right;white-space:nowrap">
+   <td data-label="Username" class="num">${e.emp_code}</td>
+   <td data-label="Password" class="num">${showPw[e.id]?e.pw:'••••••••'} <button onclick="showPw[${e.id}]=!showPw[${e.id}];renderEmps()" title="Show / hide" style="cursor:pointer;font-size:13px">👁</button></td>
+   <td data-label="Area" class="muted">${e.area||'—'}</td>
+   <td data-label="Access">${e.active?'<span class="pill present">✓ Active</span>':'<span class="pill absent">✗ Disabled</span>'}</td>
+   <td data-label="Actions" style="text-align:right;white-space:nowrap">
      <button class="btn ghost" style="padding:7px 12px;font-size:12px" onclick="toggleEmp(${e.id})">${e.active?'Disable':'Enable'}</button>
      <button class="btn ghost" style="padding:7px 12px;font-size:12px;color:var(--red);border-color:#F1D2CF" onclick="delEmp(${e.id},'${e.name.replace(/'/g,"\\'")}')">Delete</button>
    </td></tr>`).join('')||'<tr><td colspan="6" class="muted" style="text-align:center;padding:26px">No employees yet.</td></tr>';
