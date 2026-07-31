@@ -1,6 +1,7 @@
 <?php
 /* ============ HamaraStaff FREE TRIAL SIGNUP API ============ */
 require __DIR__ . '/config.php';
+require __DIR__ . '/mailer.php';
 header('Content-Type: application/json; charset=utf-8');
 function out($d){ echo json_encode(['ok'=>true,'data'=>$d]); exit; }
 function fail($e,$c=400){ http_response_code($c); echo json_encode(['ok'=>false,'error'=>$e]); exit; }
@@ -70,28 +71,28 @@ $cfg = "<?php\n"
   . "define('PLAN', 'trial');\n"
   . "define('TRIAL_ENDS', '$ends');\n"
   . "define('TRIAL_EMAIL', '" . addslashes($email) . "');\n"
-  . "define('TRIAL_PHONE', '" . addslashes($phone) . "');\n";
+  . "define('TRIAL_PHONE', '" . addslashes($phone) . "');\n"
+  . "define('DRIP_STAGE', 1);\n";
 file_put_contents("$CLIENTS/$code.php", $cfg);
 
 $CU = strtoupper($code);
 $portal = "https://hamarastaff.com/$code/";
 $endsNice = date('d M Y', strtotime($ends));
 
-/* email the credentials */
-$body = "Welcome to HamaraStaff, $name!\n\n"
-  . "Your 7-day FREE trial is ready — full access, no payment needed.\n\n"
-  . "YOUR PORTAL\n$portal\n\n"
-  . "MANAGEMENT LOGIN (Desktop panel)\nUsername: admin\nPassword: $apass\n\n"
-  . "SAMPLE FIELD STAFF LOGINS (Mobile app)\n"
-  . "$CU-1001, $CU-1002, $CU-1003\nPassword: $code@123\n"
-  . "(You can rename these or add your own staff from the management panel → Employees)\n\n"
-  . "Your trial ends on $endsNice. To continue after that, simply reply to this email and choose a plan:\n"
-  . "• ₹150 per employee/month — Mobile app\n"
-  . "• ₹250 per employee/month — Mobile app + Desktop management panel\n\n"
-  . "Need help? Just reply to this email.\n\n"
-  . "Regards,\nTeam HamaraStaff\nhttps://hamarastaff.com";
-$headers = "From: HamaraStaff <info@hamarastaff.com>\r\nReply-To: info@hamarastaff.com\r\nContent-Type: text/plain; charset=utf-8";
-$mailed = @mail($email, "Your HamaraStaff free trial is ready — $name", $body, $headers);
+/* email the credentials (branded HTML with logo) */
+$welcome = "<p>Welcome to HamaraStaff, <b>" . htmlspecialchars($name) . "</b>! &#127881;</p>"
+  . "<p>Your <b>7-day FREE trial</b> is ready &mdash; full access, no payment needed.</p>"
+  . "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='background:#F0F7F6;border-radius:14px'><tr><td style='padding:18px 20px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:2'>"
+  . "<b>Your portal:</b> <a href='$portal' style='color:#0E6B63;font-weight:700'>hamarastaff.com/$code/</a><br>"
+  . "<b>Management login:</b> admin &nbsp;/&nbsp; <b>$apass</b><br>"
+  . "<b>Sample staff (mobile app):</b> $CU-1001, $CU-1002, $CU-1003<br>"
+  . "<b>Staff password:</b> $code@123"
+  . "</td></tr></table>"
+  . "<p>You can rename the sample staff or add your own (up to 10 in trial) from the management panel &rarr; <b>Employees</b>.</p>"
+  . "<p>Your trial ends on <b>$endsNice</b>. To continue after that, choose a plan:<br>"
+  . "&#8377;150 per employee/month &mdash; Mobile app &middot; &#8377;250 per employee/month &mdash; Mobile + Management panel</p>"
+  . "<p>Need help? Just reply to this email.</p>";
+$mailed = hs_send_mail($email, "Your HamaraStaff free trial is ready — $name", $welcome, "Open My Portal", $portal);
 
 /* notify the owner */
 @mail('info@hamarastaff.com', "New trial signup: $name ($CU)",
