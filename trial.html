@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Start Your Free 7-Day Trial — HamaraStaff</title>
+<link rel="icon" type="image/png" href="/assets/favicon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#0E6B63;--teal-dark:#083D38;--teal-mid:#12857B;--soft:#E3F0EE;--ink:#13211F;--sub:#5B6E6B;--line:#E2EAE8;--red:#B3261E;--green:#1E7B34;--green-soft:#E3F3E7;--amber:#C77800}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Manrope',sans-serif;min-height:100vh;color:var(--ink);display:grid;grid-template-columns:1fr 1.1fr}
+@media(max-width:860px){body{grid-template-columns:1fr}.side{display:none}}
+.side{background:radial-gradient(600px 400px at 80% 10%,rgba(18,133,123,.6),transparent),linear-gradient(160deg,var(--teal-dark),var(--teal) 70%,var(--teal-mid));color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:40px 44px}
+.side h2{font-size:clamp(24px,2.8vw,34px);font-weight:800;line-height:1.25;max-width:400px}
+ul.perks{list-style:none;margin-top:26px}
+ul.perks li{padding:8px 0 8px 34px;position:relative;font-size:15px;font-weight:600;opacity:.95}
+ul.perks li::before{content:'✓';position:absolute;left:0;top:8px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.side .foot{font-size:12.5px;opacity:.8}
+.pane{display:flex;align-items:center;justify-content:center;padding:40px 24px;background:#F6FAF9;overflow-y:auto}
+.card{width:100%;max-width:460px}
+.badge{display:inline-flex;align-items:center;gap:8px;background:var(--green-soft);color:var(--green);font-size:12px;font-weight:800;padding:7px 14px;border-radius:99px;letter-spacing:.4px}
+.card h1{font-size:26px;font-weight:800;margin:14px 0 6px}
+.card .sub{color:var(--sub);font-size:14px;line-height:1.6;margin-bottom:22px}
+label{display:block;font-size:11.5px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin:15px 0 6px}
+input{width:100%;padding:14px 15px;border:1.5px solid var(--line);border-radius:12px;font-family:inherit;font-size:15px;background:#fff}
+input:focus{outline:2px solid var(--teal);border-color:var(--teal)}
+#code{font-family:'Space Grotesk',monospace;text-transform:uppercase;letter-spacing:2px;font-weight:700;color:var(--teal)}
+.urlprev{margin-top:7px;font-size:12.5px;color:var(--sub);font-weight:700}
+.urlprev b{color:var(--teal);font-family:'Space Grotesk'}
+.btn{width:100%;margin-top:24px;padding:16px;border:none;border-radius:15px;background:var(--teal);color:#fff;font-family:inherit;font-size:15.5px;font-weight:800;cursor:pointer;transition:.2s}
+.btn:hover{background:var(--teal-mid)}
+.btn:disabled{opacity:.6;cursor:wait}
+.err{display:none;margin-top:14px;background:#FBE9E7;color:var(--red);font-size:13px;font-weight:700;border-radius:12px;padding:12px 14px;line-height:1.5}
+.back{display:inline-flex;gap:6px;color:var(--sub);font-size:13px;font-weight:700;text-decoration:none;margin-bottom:22px}
+.back:hover{color:var(--teal)}
+.hp{position:absolute;left:-9999px;opacity:0}
+/* success */
+.success{display:none}
+.success .ok{width:64px;height:64px;border-radius:50%;background:var(--green-soft);color:var(--green);font-size:30px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.creds{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:18px;margin-top:18px}
+.creds dl{display:grid;grid-template-columns:auto 1fr;gap:9px 14px;font-size:13.5px}
+.creds dt{color:var(--sub);font-weight:700}
+.creds dd{font-weight:700;font-family:'Space Grotesk'}
+.mailnote{margin-top:14px;font-size:13px;color:var(--sub);line-height:1.6}
+.golink{display:inline-block;margin-top:18px;background:var(--teal);color:#fff;padding:14px 24px;border-radius:13px;text-decoration:none;font-weight:800;font-size:14.5px}
+</style>
+</head>
+<body>
+
+<aside class="side">
+ <a href="/" style="display:inline-block;background:#fff;padding:9px 15px;border-radius:14px;width:fit-content"><img src="/assets/logo.png?v=2" alt="HamaraStaff" style="height:38px;display:block"></a>
+ <div>
+  <h2>Try the complete system free for 7 days.</h2>
+  <ul class="perks">
+   <li>Full access — mobile app + desktop management panel</li>
+   <li>3 sample employees ready to test immediately</li>
+   <li>Add, rename or remove your own staff anytime</li>
+   <li>GPS attendance, visit reports & Excel downloads</li>
+   <li>No payment details needed. No auto-charge.</li>
+  </ul>
+ </div>
+ <div class="foot">© 2026 HamaraStaff · A BharatGPS product</div>
+</aside>
+
+<main class="pane">
+ <div class="card">
+  <div id="formBox">
+   <a class="back" href="/">‹ Back to website</a><br>
+   <span class="badge">🎁 7-DAY FREE TRIAL · NO PAYMENT NEEDED</span>
+   <h1>Create your company portal</h1>
+   <p class="sub">Your login details will be emailed to you instantly, and your portal will be ready to use right away.</p>
+
+   <label>Company / Institute Name</label>
+   <input id="company" placeholder="e.g. Sunrise Diagnostics" oninput="suggestCode()">
+   <label>Portal Code (your web address)</label>
+   <input id="code" placeholder="SUNRISE" maxlength="20" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');preview()">
+   <div class="urlprev" id="urlprev">hamarastaff.com/<b>—</b></div>
+   <label>Your Email (login details will be sent here)</label>
+   <input id="email" type="email" placeholder="you@company.com">
+   <label>Mobile Number (optional)</label>
+   <input id="phone" type="tel" placeholder="+91 9XXXXXXXXX">
+   <input class="hp" id="website" tabindex="-1" autocomplete="off">
+   <div class="err" id="err"></div>
+   <button class="btn" id="goBtn" onclick="signup()">Start My Free Trial →</button>
+  </div>
+
+  <div class="success" id="successBox">
+   <div class="ok">✓</div>
+   <h1>Your portal is ready! 🎉</h1>
+   <p class="sub" id="sMailNote"></p>
+   <div class="creds">
+    <dl>
+     <dt>Portal</dt><dd id="sUrl"></dd>
+     <dt>Admin login</dt><dd id="sAdmin"></dd>
+     <dt>Sample staff</dt><dd id="sStaff"></dd>
+     <dt>Staff password</dt><dd id="sStaffPass"></dd>
+     <dt>Trial ends</dt><dd id="sEnds"></dd>
+    </dl>
+   </div>
+   <p class="mailnote">💡 Save these details. Sign in as <b>Administrator</b> on a PC for the management panel, or as <b>Employee</b> on a phone for the field app.</p>
+   <a class="golink" id="sGo" href="#">Open My Portal →</a>
+  </div>
+ </div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+function suggestCode(){
+ const c=$('company').value.trim().split(/\s+/)[0].toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12);
+ if(!$('code').dataset.touched)$('code').value=c;
+ preview();
+}
+$('code').addEventListener('keydown',()=>$('code').dataset.touched=1);
+function preview(){$('urlprev').innerHTML='hamarastaff.com/<b>'+($('code').value.toLowerCase()||'—')+'</b>';$('err').style.display='none'}
+async function signup(){
+ const err=$('err'),btn=$('goBtn');
+ err.style.display='none';btn.disabled=true;btn.textContent='Setting up your portal…';
+ try{
+  const r=await fetch('api/trial.php',{method:'POST',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({action:'signup',company:$('company').value,code:$('code').value.toLowerCase(),email:$('email').value,phone:$('phone').value,website:$('website').value})});
+  const j=await r.json();
+  if(!j.ok)throw new Error(j.error||'Something went wrong — please try again');
+  const d=j.data;
+  $('sUrl').textContent='hamarastaff.com'+d.url;
+  $('sAdmin').textContent=d.admin_user+' / '+d.admin_pass;
+  $('sStaff').textContent=d.staff_ids;
+  $('sStaffPass').textContent=d.staff_pass;
+  $('sEnds').textContent=d.ends;
+  $('sGo').href=d.url;
+  $('sMailNote').textContent=d.mailed
+   ?'We\'ve emailed these login details to you as well — check your inbox (and spam folder).'
+   :'Please save these login details now — the confirmation email could not be sent.';
+  $('formBox').style.display='none';$('successBox').style.display='block';
+  window.scrollTo(0,0);
+ }catch(e){
+  err.textContent=e.message;err.style.display='block';
+  btn.disabled=false;btn.textContent='Start My Free Trial →';
+ }
+}
+</script>
+</body>
+</html>

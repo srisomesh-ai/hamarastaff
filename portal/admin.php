@@ -1,4 +1,5 @@
 <?php require __DIR__ . '/boot.php'; $CN = htmlspecialchars(COMPANY_NAME);
+if (PLAN === 'trial' && TRIAL_EXPIRED) trial_lock_page($CN);
 if (PLAN === 'starter') {
   header('Content-Type: text/html; charset=utf-8');
   echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Upgrade required</title></head>'
@@ -135,6 +136,13 @@ tbody tr.click:hover{background:var(--teal-soft)}
 </style>
 </head>
 <body>
+<?php if (PLAN === 'trial' && !TRIAL_EXPIRED): ?>
+<div style="background:linear-gradient(90deg,#C77800,#F0A322);color:#fff;text-align:center;padding:9px 14px;font-size:13px;font-weight:800;font-family:'Manrope',sans-serif">
+&#127873; Free Trial &mdash; <?= TRIAL_DAYS_LEFT<=0 ? 'last day today!' : TRIAL_DAYS_LEFT.' day'.(TRIAL_DAYS_LEFT>1?'s':'').' left' ?>
+&middot; <a href="https://hamarastaff.com/pricing.html" target="_blank" style="color:#fff;text-decoration:underline">Choose your plan</a>
+</div>
+<?php endif; ?>
+
 <div class="app">
 
 <aside class="sidebar">

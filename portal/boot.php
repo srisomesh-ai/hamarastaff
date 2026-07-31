@@ -24,7 +24,29 @@ define('CODE', $___code);
 define('TP', $___code . '_');
 if (!defined('ADMIN_USER')) define('ADMIN_USER', 'admin');
 if (!defined('SEED_DEMO')) define('SEED_DEMO', false);
-if (!defined('PLAN')) define('PLAN', 'professional');   // starter = mobile only, professional = mobile + desktop panel
+if (!defined('PLAN')) define('PLAN', 'professional');   // starter | professional | trial (trial = full access, 7 days)
+if (!defined('TRIAL_ENDS')) define('TRIAL_ENDS', '');
+if (PLAN === 'trial' && TRIAL_ENDS !== '') {
+  define('TRIAL_DAYS_LEFT', (int)floor((strtotime(TRIAL_ENDS) - strtotime(date('Y-m-d'))) / 86400));
+  define('TRIAL_EXPIRED', TRIAL_DAYS_LEFT < 0);
+} else {
+  define('TRIAL_DAYS_LEFT', 0);
+  define('TRIAL_EXPIRED', false);
+}
+function trial_lock_page($cn) {
+  header('Content-Type: text/html; charset=utf-8');
+  echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Trial ended</title></head>'
+    .'<body style="font-family:sans-serif;background:#F4F8F7;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px">'
+    .'<div style="background:#fff;border:1px solid #E2EAE8;border-radius:20px;padding:40px;max-width:470px;text-align:center">'
+    .'<div style="font-size:44px">&#9203;</div>'
+    .'<h2 style="margin:14px 0 8px;color:#13211F">Your free trial has ended</h2>'
+    .'<p style="color:#5B6E6B;line-height:1.65;font-size:14.5px">The 7-day free trial for <b>'.$cn.'</b> is over. Your data is safe &mdash; choose a plan to continue exactly where you left off.</p>'
+    .'<p style="color:#5B6E6B;font-size:14px;line-height:1.7"><b>&#8377;150</b>/employee/month &mdash; Mobile app<br><b>&#8377;250</b>/employee/month &mdash; Mobile + Desktop panel</p>'
+    .'<a href="mailto:info@hamarastaff.com?subject=Activate my HamaraStaff account" style="display:inline-block;margin:10px 6px 0;background:#0E6B63;color:#fff;padding:13px 22px;border-radius:12px;text-decoration:none;font-weight:700">&#9993; Email Us to Activate</a>'
+    .'<a href="https://hamarastaff.com/pricing.html" style="display:inline-block;margin:10px 6px 0;background:#fff;border:1.5px solid #E2EAE8;color:#13211F;padding:13px 22px;border-radius:12px;text-decoration:none;font-weight:700">View Plans</a>'
+    .'</div></body></html>';
+  exit;
+}
 if (!defined('RETENTION_DAYS')) define('RETENTION_DAYS', 365);
 define('CLIENT_LOGO_FILE', $___root . '/clients/' . CODE . '-logo.png');
 define('CLIENT_LOGO_URL', '/clients/' . CODE . '-logo.png');

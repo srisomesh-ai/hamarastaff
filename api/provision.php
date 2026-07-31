@@ -57,7 +57,12 @@ function clientList($CLIENTS){
     if(preg_match("/define\('COMPANY_NAME',\s*'((?:[^'\\\\]|\\\\.)*)'\)/",$cfg,$m)) $name=stripslashes($m[1]);
     $plan='professional';
     if(preg_match("/define\('PLAN',\s*'([a-z]+)'\)/",$cfg,$pm)) $plan=$pm[1];
-    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
+    $days=null;
+    if($plan==='trial' && preg_match("/define\('TRIAL_ENDS',\s*'([0-9-]+)'\)/",$cfg,$tm))
+      $days=(int)floor((strtotime($tm[1])-strtotime(date('Y-m-d')))/86400);
+    $email=null;
+    if(preg_match("/define\('TRIAL_EMAIL',\s*'((?:[^'\\\\]|\\\\.)*)'\)/",$cfg,$em)) $email=stripslashes($em[1]);
+    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'email'=>$email,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
   }
   return $list;
 }

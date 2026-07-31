@@ -1,4 +1,5 @@
-<?php require __DIR__ . '/boot.php'; $CN = htmlspecialchars(COMPANY_NAME); ?>
+<?php require __DIR__ . '/boot.php'; $CN = htmlspecialchars(COMPANY_NAME);
+if (PLAN === 'trial' && TRIAL_EXPIRED) trial_lock_page($CN); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -183,6 +184,13 @@ label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:14p
 </style>
 </head>
 <body>
+<?php if (PLAN === 'trial' && !TRIAL_EXPIRED): ?>
+<div style="background:linear-gradient(90deg,#C77800,#F0A322);color:#fff;text-align:center;padding:9px 14px;font-size:13px;font-weight:800;font-family:'Manrope',sans-serif">
+&#127873; Free Trial &mdash; <?= TRIAL_DAYS_LEFT<=0 ? 'last day today!' : TRIAL_DAYS_LEFT.' day'.(TRIAL_DAYS_LEFT>1?'s':'').' left' ?>
+&middot; <a href="https://hamarastaff.com/pricing.html" target="_blank" style="color:#fff;text-decoration:underline">Choose your plan</a>
+</div>
+<?php endif; ?>
+
 <div class="phone">
 
 <!-- ============ EMPLOYEE SHELL ============ -->

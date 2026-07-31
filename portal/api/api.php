@@ -14,6 +14,9 @@ function actorName(){ return ($_SESSION['role']??'')==='admin' ? 'Admin' : ($_SE
 
 $in = json_decode(file_get_contents('php://input'), true) ?: [];
 $action = $in['action'] ?? '';
+if (PLAN === 'trial' && TRIAL_EXPIRED && $action !== 'logout') {
+  fail('Your 7-day free trial has ended. Email info@hamarastaff.com to activate your account and continue.', 402);
+}
 
 try { $db = db(); } catch (Exception $e) { fail('Database not configured. Open api/install.php after filling config.php.', 500); }
 
