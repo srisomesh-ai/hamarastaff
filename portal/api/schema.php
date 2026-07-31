@@ -83,3 +83,33 @@ function hs_seed_demo() {
   $st->execute([$codebase.'-1003', 'Suresh Babu',  $pw, 'Gajuwaka']);
   return true;
 }
+function hs_seed_demo_visits() {
+  $db = db();
+  if ($db->query("SELECT COUNT(*) c FROM hs_tasks")->fetch()['c'] > 0) return false;
+  $emps = $db->query("SELECT id, emp_code FROM hs_employees ORDER BY id LIMIT 3")->fetchAll();
+  if (count($emps) < 2) return false;
+  $e1 = $emps[0]['id']; $e2 = $emps[1]['id'];
+  $D = date('Y-m-d');
+  /* today's attendance for two staff */
+  $a = $db->prepare("INSERT IGNORE INTO hs_attendance (emp_id,att_date,start_time,start_lat,start_lng,start_area) VALUES (?,?,?,?,?,?)");
+  $a->execute([$e1, $D, "$D 09:05:00", '17.72861', '83.30502', 'Dwaraka Nagar']);
+  $a->execute([$e2, $D, "$D 09:20:00", '17.74195', '83.33501', 'MVP Colony']);
+  /* one closed visit with full report */
+  $db->prepare("INSERT INTO hs_tasks (emp_id,doctor,hospital,area,purpose,planned_time,client_email,status,created_by,created_at) VALUES (?,?,?,?,?,?,?,?,?,?)")
+     ->execute([$e1,'Dr. K. Prasad','Apollo Clinic','Waltair Uplands','Product Demo','10:00','','closed','Self',"$D 09:06:00"]);
+  $t1 = $db->lastInsertId();
+  $ev = $db->prepare("INSERT INTO hs_task_events (task_id,type,event_time,lat,lng,area) VALUES (?,?,?,?,?,?)");
+  $ev->execute([$t1,'reach',"$D 10:05:00",'17.72154','83.32291','Waltair Uplands']);
+  $ev->execute([$t1,'close',"$D 10:45:00",'17.72149','83.32304','Waltair Uplands']);
+  $db->prepare("INSERT INTO hs_visit_reports (task_id,met,products,demo_given,samples,outcome,remarks,loc_attached,sent_via,closed_at) VALUES (?,?,?,?,?,?,?,?,?,?)")
+     ->execute([$t1,'Dr. K. Prasad','["Product A","Product B"]','Yes',6,'Interested — wants pricing','Liked the demo. Asked for institutional pricing before next month.',1,'Email',"$D 10:45:00"]);
+  /* one visit in progress */
+  $db->prepare("INSERT INTO hs_tasks (emp_id,doctor,hospital,area,purpose,planned_time,status,created_by,created_at) VALUES (?,?,?,?,?,?,?,?,?)")
+     ->execute([$e2,'Dr. Meena Rao','Care Hospital','Gajuwaka','Follow-up Visit','11:30','reached','Manager',"$D 09:21:00"]);
+  $t2 = $db->lastInsertId();
+  $ev->execute([$t2,'reach',"$D 11:20:00",'17.68702','83.21876','Gajuwaka']);
+  /* one open visit */
+  $db->prepare("INSERT INTO hs_tasks (emp_id,doctor,hospital,area,purpose,planned_time,status,created_by,created_at) VALUES (?,?,?,?,?,?,?,?,?)")
+     ->execute([$e1,'Sri Sai Medicals','Pharmacy','MVP Colony','Order Collection','15:00','open','Self',"$D 09:07:00"]);
+  return true;
+}

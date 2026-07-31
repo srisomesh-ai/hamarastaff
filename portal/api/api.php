@@ -253,6 +253,21 @@ case 'emp_add': {
   out(true);
 }
 
+case 'emp_update': {
+  requireAdmin();
+  $id=(int)($in['id']??0);
+  $st=$db->prepare("SELECT * FROM hs_employees WHERE id=?"); $st->execute([$id]);
+  $e=$st->fetch(); if(!$e) fail('notfound',404);
+  $name=trim($in['name']??''); $code=trim($in['emp_code']??''); $area=trim($in['area']??''); $pw=trim($in['password']??'');
+  if(!$name||!$code) fail('missing');
+  $ck=$db->prepare("SELECT 1 FROM hs_employees WHERE LOWER(emp_code)=LOWER(?) AND id<>?"); $ck->execute([$code,$id]);
+  if($ck->fetch()) fail('exists');
+  if($pw!=='') $db->prepare("UPDATE hs_employees SET name=?, emp_code=?, area=?, password=? WHERE id=?")->execute([$name,$code,$area,$pw,$id]);
+  else $db->prepare("UPDATE hs_employees SET name=?, emp_code=?, area=? WHERE id=?")->execute([$name,$code,$area,$id]);
+  audit('Admin','emp_update',$e['name'].' -> '.$name.' ('.$code.')');
+  out(true);
+}
+
 case 'emp_toggle': {
   requireAdmin(); $id=(int)($in['id']??0);
   $db->prepare("UPDATE hs_employees SET active=1-active WHERE id=?")->execute([$id]);

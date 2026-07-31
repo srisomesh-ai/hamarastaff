@@ -51,7 +51,8 @@ select{font-family:inherit;font-size:14px;padding:9px 12px;border:1.5px solid va
 .nav button{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border-radius:12px;color:rgba(255,255,255,.85);font-size:14px;font-weight:700;margin-bottom:4px;text-align:left;transition:.15s}
 .nav button:hover{background:rgba(255,255,255,.1)}
 .nav button.on{background:#fff;color:var(--teal)}
-.nav .i{font-size:17px;width:22px;text-align:center}
+.nav .i{width:22px;display:flex;align-items:center;justify-content:center}
+.nav .i svg,.bottombar svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .me{padding:16px 20px;border-top:1px solid rgba(255,255,255,.15);display:flex;gap:12px;align-items:center}
 .me .avatar{width:38px;height:38px;border-radius:50%;background:#fff;color:var(--teal);font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
 .me b{font-size:14px;display:block}
@@ -122,6 +123,7 @@ tbody tr.click:hover{background:var(--teal-soft)}
 .report-grid dt{color:var(--sub);font-weight:700}
 .report-grid dd{font-weight:600}
 .sendline{display:inline-flex;align-items:center;gap:8px;background:var(--green-soft);color:var(--green);font-size:12.5px;font-weight:800;border-radius:10px;padding:9px 14px;margin-top:14px}
+#planCards{align-items:stretch}
 .hod-banner{background:var(--teal-soft);border:1.5px solid var(--teal);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:16px;margin-bottom:20px}
 .hod-banner b{font-size:14.5px}
 .hod-banner p{font-size:12.5px;color:var(--teal-dark);margin-top:2px}
@@ -130,17 +132,17 @@ tbody tr.click:hover{background:var(--teal-soft)}
 .bottombar{display:none}
 .mobile-note{display:none}
 @media(max-width:900px){
- .app{grid-template-columns:1fr}
- .sidebar{position:sticky;top:0;height:auto;z-index:40;flex-direction:column;display:block}
+ .app{grid-template-columns:1fr;grid-template-rows:auto 1fr;align-content:start}
+ .sidebar{position:static;height:auto;z-index:40;flex-direction:column;display:block}
  .brand{padding:10px 14px;border-bottom:none;display:flex}
  .brand .b-ic{width:32px;height:32px;font-size:16px}
  .brand b{font-size:13.5px}.brand span{font-size:10px}
  .nav{display:none}
  .me{display:none}
  .bottombar{display:flex;position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);z-index:60;padding:6px 4px calc(6px + env(safe-area-inset-bottom))}
- .bottombar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;font-weight:800;color:var(--sub);background:none;border:none;padding:5px 2px;cursor:pointer;font-family:inherit}
+ .bottombar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:800;color:#9AACA9;background:none;border:none;padding:6px 2px;cursor:pointer;font-family:inherit;transition:.15s}
  .bottombar button.on{color:var(--teal)}
- .bottombar .i{font-size:19px}
+ .bottombar button.on svg{stroke-width:2.4}
  .main{padding:14px 12px 100px}
  .pagehead{flex-wrap:wrap;gap:10px;margin-bottom:14px}
  .pagehead h1{font-size:18px}
@@ -192,12 +194,12 @@ tbody tr.click:hover{background:var(--teal-soft)}
     <div><b><?= $CN ?></b><span>Management Panel</span></div>
   </div>
   <nav class="nav">
-    <button class="on" data-pg="dash" onclick="go('dash')"><span class="i">📊</span>Dashboard</button>
-    <button data-pg="att" onclick="go('att')"><span class="i">✅</span>Attendance</button>
-    <button data-pg="visits" onclick="go('visits')"><span class="i">📋</span>Field Visits</button>
-    <button data-pg="activity" onclick="go('activity')"><span class="i">🕒</span>Activity Trail</button>
-    <button data-pg="emps" onclick="go('emps')"><span class="i">👥</span>Employees</button>
-    <button data-pg="billing" onclick="go('billing')"><span class="i">💳</span>Plan &amp; Billing</button>
+    <button class="on" data-pg="dash" onclick="go('dash')"><span class="i"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></span>Dashboard</button>
+    <button data-pg="att" onclick="go('att')"><span class="i"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg></span>Attendance</button>
+    <button data-pg="visits" onclick="go('visits')"><span class="i"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg></span>Field Visits</button>
+    <button data-pg="activity" onclick="go('activity')"><span class="i"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></span>Activity Trail</button>
+    <button data-pg="emps" onclick="go('emps')"><span class="i"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Employees</button>
+    <button data-pg="billing" onclick="go('billing')"><span class="i"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg></span>Plan &amp; Billing</button>
   </nav>
   <div class="me">
     <div class="avatar">AP</div>
@@ -310,12 +312,12 @@ tbody tr.click:hover{background:var(--teal-soft)}
 </main>
 
 <nav class="bottombar">
-  <button class="on" data-pg="dash" onclick="go('dash')"><span class="i">📊</span>Home</button>
-  <button data-pg="att" onclick="go('att')"><span class="i">✅</span>Attend</button>
-  <button data-pg="visits" onclick="go('visits')"><span class="i">📋</span>Visits</button>
-  <button data-pg="activity" onclick="go('activity')"><span class="i">🕒</span>Trail</button>
-  <button data-pg="emps" onclick="go('emps')"><span class="i">👥</span>Staff</button>
-  <button data-pg="billing" onclick="go('billing')"><span class="i">💳</span>Plan</button>
+  <button class="on" data-pg="dash" onclick="go('dash')"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>Home</button>
+  <button data-pg="att" onclick="go('att')"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4 12 14.01l-3-3"/></svg>Attend</button>
+  <button data-pg="visits" onclick="go('visits')"><svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg>Visits</button>
+  <button data-pg="activity" onclick="go('activity')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Trail</button>
+  <button data-pg="emps" onclick="go('emps')"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Staff</button>
+  <button data-pg="billing" onclick="go('billing')"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>Plan</button>
 </nav>
 </div>
 
@@ -445,6 +447,7 @@ function renderEmps(){
    <td data-label="Area" class="muted">${e.area||'—'}</td>
    <td data-label="Access">${e.active?'<span class="pill present">✓ Active</span>':'<span class="pill absent">✗ Disabled</span>'}</td>
    <td data-label="Actions" style="text-align:right;white-space:nowrap">
+     <button class="btn ghost" style="padding:7px 12px;font-size:12px" onclick="editEmp(${e.id})">Edit</button>
      <button class="btn ghost" style="padding:7px 12px;font-size:12px" onclick="toggleEmp(${e.id})">${e.active?'Disable':'Enable'}</button>
      <button class="btn ghost" style="padding:7px 12px;font-size:12px;color:var(--red);border-color:#F1D2CF" onclick="delEmp(${e.id},'${e.name.replace(/'/g,"\\'")}')">Delete</button>
    </td></tr>`).join('')||'<tr><td colspan="6" class="muted" style="text-align:center;padding:26px">No employees yet.</td></tr>';
@@ -464,6 +467,23 @@ function openEmpForm(){
   ${F('fA','Area','e.g. MVP Colony')}
   <button class="btn primary" style="width:100%;margin-top:20px;justify-content:center" onclick="saveEmp()">Create Employee ✓</button></div>`;
  $('overlay').classList.add('show');
+}
+function editEmp(id){
+ const e=D.employees.find(x=>x.id===id); if(!e)return;
+ $('modalBody').innerHTML=`<b style="font-size:18px">Edit Employee</b><div style="margin-top:6px">
+  ${F('fN','Full Name','')}
+  ${F('fI','Username (Employee ID)','')}
+  ${F('fP','New Password (leave blank to keep current)','Unchanged')}
+  ${F('fA','Area','')}
+  <button class="btn primary" style="width:100%;margin-top:20px;justify-content:center" onclick="saveEditEmp(${id})">Save Changes ✓</button></div>`;
+ $('overlay').classList.add('show');
+ $('fN').value=e.name;$('fI').value=e.emp_code;$('fA').value=e.area||'';
+}
+async function saveEditEmp(id){
+ const n=$('fN').value.trim(),i=$('fI').value.trim(),p=$('fP').value.trim(),a=$('fA').value.trim();
+ if(!n||!i)return toast('Name and username are required');
+ try{await api('emp_update',{id,name:n,emp_code:i,password:p,area:a});closeModal();toast('Employee updated ✓');await loadAll(true)}
+ catch(e){toast(e.message==='exists'?'That username already exists':'Could not update: '+e.message)}
 }
 async function saveEmp(){
  const n=$('fN').value.trim(),i=$('fI').value.trim(),p=$('fP').value.trim(),a=$('fA').value.trim();
@@ -558,18 +578,28 @@ function renderBilling(){
    <span class="pill present">✓ Active</span>${HS_ENDS?`<button class="btn primary" style="padding:9px 14px;font-size:12.5px" onclick="openPay(250,'Professional')">Renew</button>`:''}</div></div>`;
  }
  el.innerHTML=head;
+ const fi=(ok,text)=>`<div style="display:flex;gap:9px;align-items:flex-start;padding:5px 0;font-size:13px;${ok?'':'color:#A7B7B4'}">
+   <span style="flex:0 0 17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;margin-top:1px;${ok?'background:var(--green-soft);color:var(--green)':'background:#EEF2F1;color:#A7B7B4'}">${ok?'✓':'✕'}</span>
+   <span style="line-height:1.45">${text}</span></div>`;
  const plan=(rate,title,desc,feats,active)=>`
-  <div class="card" style="${active?'border:2px solid var(--teal)':''}">
-   <b style="font-size:16px">${title}</b>
-   <div style="font-size:26px;font-weight:700;font-family:'Space Grotesk';color:var(--teal);margin:6px 0 2px">₹${rate}<span style="font-size:13px;color:var(--sub)"> /employee/month</span></div>
-   <div class="muted" style="font-size:12.5px;margin-bottom:10px">${desc}</div>
-   <div style="font-size:12.5px;line-height:2">${feats.map(x=>'✓ '+x).join('<br>')}</div>
-   ${active?'<div class="pill present" style="margin-top:12px">✓ Currently Active</div>'
-    :`<button class="btn primary" style="margin-top:12px;width:100%;justify-content:center" onclick="openPay(${rate},'${title.replace(/'/g,'')}')">Pay ₹${billedInfo(rate).amt} &amp; Activate</button>`}
+  <div class="card plancard" style="display:flex;flex-direction:column;margin-bottom:0;${active?'border:2px solid var(--teal);box-shadow:0 8px 24px rgba(14,107,99,.12)':''}">
+   <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:16px">${title}</b>${active?'<span class="pill present">✓ Active</span>':''}</div>
+   <div style="font-size:27px;font-weight:700;font-family:'Space Grotesk';color:var(--teal);margin:6px 0 2px">₹${rate}<span style="font-size:13px;color:var(--sub);font-family:'Manrope'"> /employee/month</span></div>
+   <div class="muted" style="font-size:12.5px;margin-bottom:12px">${desc}</div>
+   <div style="flex:1">${feats.map(x=>fi(x[0],x[1])).join('')}</div>
+   ${active?'<div style="margin-top:14px;text-align:center;font-size:12.5px;font-weight:800;color:var(--green)">This is your current plan</div>'
+    :`<button class="btn primary" style="margin-top:14px;width:100%;justify-content:center" onclick="openPay(${rate},'${title.replace(/'/g,'')}')">Pay ₹${billedInfo(rate).amt} &amp; Activate</button>`}
   </div>`;
  $('planCards').innerHTML=
-  plan(150,'Starter','Mobile app for field staff',['GPS attendance & visit tasks','Visit reports emailed to clients','Excel reports','Minimum 10 employees — ₹1,500/month'],HS_PLAN==='starter')+
-  plan(250,'Professional','Mobile app + this desktop panel',['Everything in Starter','Desktop management panel','HOD payroll approval','Priority support','Minimum billing ₹5,000/month (20 employees)','+₹250 per additional employee above 20'],HS_PLAN==='professional');
+  plan(150,'Starter','Mobile app for field staff',[
+   [1,'GPS attendance & visit tasks'],[1,'Visit reports emailed to clients'],[1,'Excel reports'],
+   [1,'Minimum 10 employees — ₹1,500/month'],
+   [0,'Desktop management panel'],[0,'HOD payroll approval'],[0,'Priority support']
+  ],HS_PLAN==='starter')+
+  plan(250,'Professional','Mobile app + desktop management panel',[
+   [1,'Everything in Starter'],[1,'Desktop management panel'],[1,'HOD payroll approval'],[1,'Priority support'],
+   [1,'Minimum billing ₹5,000/month (20 employees)'],[1,'+₹250 per additional employee above 20']
+  ],HS_PLAN==='professional');
 }
 function openPay(rate,title){
  const {n,min,bn,amt}=billedInfo(rate);

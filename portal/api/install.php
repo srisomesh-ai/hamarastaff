@@ -8,6 +8,9 @@ try {
     $cb = strtoupper(CODE);
     echo "Seeded 3 demo employees ({$cb}-1001..1003, password " . CODE . "@123).\n";
   }
+  if (defined('SEED_DEMO') && SEED_DEMO && hs_seed_demo_visits()) {
+    echo "Seeded sample attendance and visits for today.\n";
+  }
   echo "OK " . COMPANY_NAME . " — all tables ready (prefix: " . TP . ").\n";
 } catch (Exception $e) {
   http_response_code(500);

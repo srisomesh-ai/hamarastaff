@@ -58,6 +58,7 @@ try {
   require $ROOT . '/portal/api/schema.php';
   hs_create_tables();
   hs_seed_demo();
+  hs_seed_demo_visits();
 } catch (Exception $e) { fail('Could not set up your trial right now. Please try again or email info@hamarastaff.com', 500); }
 
 /* the client file */
