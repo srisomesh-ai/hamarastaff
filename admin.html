@@ -160,11 +160,12 @@ async function loadClients(){
     ${c.logo?`<img src="${c.logo}?v=${Date.now()}" style="width:46px;height:46px;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:#fff;padding:4px">`:`<div style="width:46px;height:46px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:22px">🏢</div>`}
     <div><div class="code">${c.code.toUpperCase()}</div><div class="nm" style="margin:0">${c.name}</div></div>
    </div>
-   <span class="st ok">● Live</span>
+   <span class="st ok">● Live</span> <span class="st" style="background:${c.plan==='starter'?'var(--amber-soft)':'var(--soft)'};color:${c.plan==='starter'?'var(--amber)':'var(--teal)'}">${c.plan==='starter'?'₹150 Starter · Mobile only':'₹250 Professional'}</span>
    <div class="acts">
     <a class="btn ghost" href="/${c.code}/" target="_blank">Open Portal</a>
     <a class="btn ghost" href="/${c.code}/admin.html" target="_blank">Admin Panel</a>
     <button class="btn ghost" onclick="pickLogo('${c.code}')">${c.logo?'Change Logo':'Set Logo'}</button>
+    <button class="btn ghost" onclick="changePlan('${c.code}','${c.plan}')">${c.plan==='starter'?'Upgrade to ₹250':'Downgrade to ₹150'}</button>
     <button class="btn danger" onclick="openDelete('${c.code}')">Delete</button>
    </div>
   </div>`).join('')
@@ -183,6 +184,11 @@ function openCreate(){
   <input id="cName" placeholder="e.g. Apollo Hospitals, Vizag">
   <label>Portal Admin Password (for their management login)</label>
   <input id="cPass" placeholder="Min 6 characters, e.g. Apollo@2026">
+  <label>Plan</label>
+  <select id="cPlan" style="font-family:inherit;font-size:14.5px;width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:12px;background:#fff">
+   <option value="professional">₹250 Professional — Mobile app + Desktop panel</option>
+   <option value="starter">₹150 Starter — Mobile app only (no desktop panel)</option>
+  </select>
   <label>Client Logo (optional — shown on their login page)</label>
   <input type="file" id="cLogo" accept="image/png,image/jpeg,image/webp" style="padding:11px">
   <div class="chk"><input type="checkbox" id="cSeed"><label for="cSeed" style="margin:0;text-transform:none;font-size:13.5px;letter-spacing:0">Add 3 demo employees (for giving a demo)</label></div>
@@ -203,7 +209,7 @@ async function createClient(){
  btn.disabled=true;btn.textContent='Creating portal…';
  try{
   const logo=await readLogo();
-  const r=await api('create',{code,name,admin_pass:pass,seed_demo:$('cSeed').checked,logo});
+  const r=await api('create',{code,name,admin_pass:pass,seed_demo:$('cSeed').checked,logo,plan:$('cPlan').value});
   res.style.display='block';
   res.innerHTML=`✅ <b>${code.toUpperCase()}</b> portal created — database ready!<br>
    Portal: <b>hamarastaff.com/${code}/</b><br>
@@ -244,6 +250,11 @@ async function doDelete(code){
   await api('remove',{code,confirm:$('dConfirm').value.trim().toLowerCase()});
   closeModal();toast(code.toUpperCase()+' portal deleted');loadClients();
  }catch(e){toast(e.message)}
+}
+async function changePlan(code,cur){
+ const to=cur==='starter'?'professional':'starter';
+ if(!confirm('Change '+code.toUpperCase()+' to the '+(to==='starter'?'₹150 Starter (mobile only — desktop panel will be BLOCKED)':'₹250 Professional (desktop panel enabled)')+' plan?'))return;
+ try{await api('set_plan',{code,plan:to});toast('Plan updated ✓');loadClients()}catch(e){toast(e.message)}
 }
 function closeModal(){$('overlay').classList.remove('show')}
 boot();

@@ -24,6 +24,7 @@ define('CODE', $___code);
 define('TP', $___code . '_');
 if (!defined('ADMIN_USER')) define('ADMIN_USER', 'admin');
 if (!defined('SEED_DEMO')) define('SEED_DEMO', false);
+if (!defined('PLAN')) define('PLAN', 'professional');   // starter = mobile only, professional = mobile + desktop panel
 if (!defined('RETENTION_DAYS')) define('RETENTION_DAYS', 365);
 define('CLIENT_LOGO_FILE', $___root . '/clients/' . CODE . '-logo.png');
 define('CLIENT_LOGO_URL', '/clients/' . CODE . '-logo.png');

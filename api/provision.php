@@ -55,7 +55,9 @@ function clientList($CLIENTS){
     $cfg=file_get_contents($f);
     $name=strtoupper($code);
     if(preg_match("/define\('COMPANY_NAME',\s*'((?:[^'\\\\]|\\\\.)*)'\)/",$cfg,$m)) $name=stripslashes($m[1]);
-    $list[]=['code'=>$code,'name'=>$name,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
+    $plan='professional';
+    if(preg_match("/define\('PLAN',\s*'([a-z]+)'\)/",$cfg,$pm)) $plan=$pm[1];
+    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
   }
   return $list;
 }
@@ -79,6 +81,7 @@ case 'create': {
   $name=trim($in['name']??'');
   $apass=trim($in['admin_pass']??'');
   $seed=!empty($in['seed_demo']);
+  $plan=($in['plan']??'professional')==='starter'?'starter':'professional';
   if(!preg_match('/^[a-z0-9][a-z0-9-]{1,19}$/',$code)) fail('Code must be 2–20 letters/numbers (e.g. APOLLO)');
   if(in_array($code,['api','portal','clients','assets','admin','login','pricing','index'])) fail('That code is reserved — choose another');
   if(file_exists("$CLIENTS/$code.php")) fail('A client with this code already exists');
@@ -97,11 +100,25 @@ case 'create': {
     ."define('COMPANY_NAME', '".addslashes($name)."');\n"
     ."define('ADMIN_USER', 'admin');\n"
     ."define('ADMIN_PASS', '".addslashes($apass)."');\n"
-    ."define('SEED_DEMO', ".($seed?'true':'false').");\n";
+    ."define('SEED_DEMO', ".($seed?'true':'false').");\n"
+    ."define('PLAN', '".$plan."');\n";
   file_put_contents("$CLIENTS/$code.php",$cfg);
   $logoSaved=saveLogo($CLIENTS,$code,$in['logo']??null);
 
   out(['code'=>$code,'url'=>'/'.$code.'/','seeded'=>$seeded,'logo'=>$logoSaved]);
+}
+
+case 'set_plan': {
+  requireSuper();
+  $code=strtolower(trim($in['code']??''));
+  $plan=($in['plan']??'')==='starter'?'starter':'professional';
+  $f="$CLIENTS/$code.php";
+  if(!file_exists($f)) fail('Client not found',404);
+  $cfg=file_get_contents($f);
+  if(preg_match("/define\('PLAN',/",$cfg)) $cfg=preg_replace("/define\('PLAN',\s*'[a-z]+'\);/","define('PLAN', '".$plan."');",$cfg);
+  else $cfg.="define('PLAN', '".$plan."');\n";
+  file_put_contents($f,$cfg);
+  out(['plan'=>$plan]);
 }
 
 case 'set_logo': {

@@ -1,4 +1,18 @@
-<?php require __DIR__ . '/boot.php'; $CN = htmlspecialchars(COMPANY_NAME); ?>
+<?php require __DIR__ . '/boot.php'; $CN = htmlspecialchars(COMPANY_NAME);
+if (PLAN === 'starter') {
+  header('Content-Type: text/html; charset=utf-8');
+  echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Upgrade required</title></head>'
+    .'<body style="font-family:sans-serif;background:#F4F8F7;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px">'
+    .'<div style="background:#fff;border:1px solid #E2EAE8;border-radius:20px;padding:40px;max-width:460px;text-align:center">'
+    .'<div style="font-size:44px">🖥️</div>'
+    .'<h2 style="margin:14px 0 8px;color:#13211F">Desktop Management Panel</h2>'
+    .'<p style="color:#5B6E6B;line-height:1.6;font-size:14.5px">The management desktop panel is available on the <b>Professional plan (₹250/user/month)</b>. Your current plan (<b>Starter</b>) includes the mobile app for field staff.</p>'
+    .'<p style="color:#5B6E6B;font-size:13.5px">To upgrade, contact HamaraStaff.</p>'
+    .'<a href="https://hamarastaff.com/pricing.html" style="display:inline-block;margin-top:14px;background:#0E6B63;color:#fff;padding:13px 24px;border-radius:12px;text-decoration:none;font-weight:700">View Plans →</a>'
+    .'</div></body></html>';
+  exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

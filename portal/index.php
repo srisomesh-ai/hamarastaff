@@ -44,7 +44,7 @@ input:focus{outline:2px solid var(--teal);border-color:var(--teal)}
 
   <div class="tabs">
     <button class="on" id="tabEmp" onclick="pick('emp')">🧑‍⚕️ Employee</button>
-    <button id="tabAdmin" onclick="pick('admin')">👔 Administrator</button>
+    <?php if (PLAN !== 'starter'): ?><button id="tabAdmin" onclick="pick('admin')">👔 Administrator</button><?php endif; ?>
   </div>
 
   <label>Employee ID / Username</label>
@@ -67,7 +67,7 @@ let role='emp';
 function pick(r){
  role=r;
  document.getElementById('tabEmp').classList.toggle('on',r==='emp');
- document.getElementById('tabAdmin').classList.toggle('on',r==='admin');
+ const ta=document.getElementById('tabAdmin'); if(ta)ta.classList.toggle('on',r==='admin');
  document.getElementById('loginBtn').textContent=r==='emp'?'Sign In as Employee \u2192':'Sign In as Administrator \u2192';
  document.querySelector('label').textContent=r==='emp'?'Employee ID / Username':'Admin Username';
 }

@@ -9,7 +9,7 @@ function fmt($dt){ return $dt ? date('h:i a', strtotime($dt)) : null; }
 function initials($name){ $p=preg_split('/\s+/',trim($name)); $i=''; foreach(array_slice($p,0,2) as $w) $i.=strtoupper(substr($w,0,1)); return $i?:'?'; }
 function audit($actor,$action,$details=''){ try{ db()->prepare("INSERT INTO hs_audit_log (actor,action,details) VALUES (?,?,?)")->execute([$actor,$action,$details]); }catch(Exception $e){} }
 function requireEmp(){ if(($_SESSION['role']??'')!=='emp' || ($_SESSION['tenant']??'')!==CODE) fail('auth',401); return (int)$_SESSION['emp_id']; }
-function requireAdmin(){ if(($_SESSION['role']??'')!=='admin' || ($_SESSION['tenant']??'')!==CODE) fail('auth',401); }
+function requireAdmin(){ if(PLAN==='starter' || ($_SESSION['role']??'')!=='admin' || ($_SESSION['tenant']??'')!==CODE) fail('auth',401); }
 function actorName(){ return ($_SESSION['role']??'')==='admin' ? 'Admin' : ($_SESSION['emp_name'] ?? 'Unknown'); }
 
 $in = json_decode(file_get_contents('php://input'), true) ?: [];
@@ -89,6 +89,7 @@ switch($action){
 case 'login': {
   $u=trim($in['username']??''); $p=$in['password']??''; $role=$in['role']??'emp';
   if($role==='admin'){
+    if(PLAN==='starter') fail('The management panel is not included in your Starter plan. Contact HamaraStaff to upgrade to Professional.');
     if($u!==ADMIN_USER || $p!==ADMIN_PASS){ audit($u,'login_failed','admin'); fail('invalid'); }
     session_regenerate_id(true);
     $_SESSION=['role'=>'admin','tenant'=>CODE];
