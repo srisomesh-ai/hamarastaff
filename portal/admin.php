@@ -130,13 +130,35 @@ tbody tr.click:hover{background:var(--teal-soft)}
 .mobile-note{display:none}
 @media(max-width:900px){
  .app{grid-template-columns:1fr}
- .sidebar{position:static;height:auto;flex-direction:row;align-items:center;flex-wrap:wrap}
- .nav{display:flex;padding:8px;flex:1}.nav button{margin:0;padding:10px}
- .me{display:none}.main{padding:18px}
- .stats{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}
- .mobile-note{display:block;background:var(--amber-soft);color:var(--amber);font-size:12.5px;font-weight:700;padding:10px 14px;border-radius:12px;margin-bottom:16px}
-}
-</style>
+ .sidebar{position:sticky;top:0;height:auto;z-index:40;flex-direction:column}
+ .brand{padding:12px 16px;border-bottom:none}
+ .brand .b-ic{width:34px;height:34px;font-size:17px}
+ .brand b{font-size:14px}.brand span{font-size:10.5px}
+ .nav{display:flex;padding:0 8px 10px;flex:none;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:4px}
+ .nav button{margin:0;padding:9px 12px;font-size:12px;white-space:nowrap;flex:0 0 auto}
+ .nav .i{font-size:15px;width:auto}
+ .me{display:none}
+ .main{padding:14px 12px}
+ .pagehead{flex-wrap:wrap;gap:10px;margin-bottom:14px}
+ .pagehead h1{font-size:18px}
+ .pagehead .date{font-size:12px}
+ .pagehead .btn{padding:9px 13px;font-size:12.5px}
+ .stats{grid-template-columns:1fr 1fr;gap:10px}
+ .stat{padding:13px 14px;gap:10px}
+ .stat .ic{width:38px;height:38px;font-size:17px}
+ .stat .n{font-size:20px}
+ .grid2{grid-template-columns:1fr}
+ .card{padding:14px;overflow-x:auto}
+ .card table{min-width:560px}
+ #billing .card table{min-width:0}
+ #curPlanCard .card,#planCards .card{overflow-x:visible}
+ .modal{padding:18px}
+ .overlay{padding:16px 10px}
+ .report-grid{grid-template-columns:1fr;gap:2px 0}
+ .report-grid dt{margin-top:8px}
+ select{max-width:150px}
+ .mobile-note{display:none}
+}</style>
 </head>
 <body>
 <?php if (PLAN !== 'trial' && PLAN_ENDS !== '' && !SUB_EXPIRED && SUB_DAYS_LEFT <= 7): ?>
@@ -483,6 +505,11 @@ function closeModal(){$('overlay').classList.remove('show')}
 
 /* ---------- Plan & Billing ---------- */
 function activeEmpCount(){return D?D.employees.filter(e=>e.active).length:0}
+const MIN_EMPS={150:10,250:20};
+function billedInfo(rate){
+ const n=activeEmpCount(), min=MIN_EMPS[rate], bn=Math.max(n,min);
+ return {n,min,bn,amt:bn*rate};
+}
 function renderBilling(){
  const el=$('curPlanCard'); if(!el)return;
  const n=activeEmpCount();
@@ -496,16 +523,18 @@ function renderBilling(){
      <div style="font-size:13px;opacity:.95;margin-top:3px">${d<0?'Your trial has ended':d===0?'Last day today!':d+' day'+(d>1?'s':'')+' left'} · Choose a plan below to continue without interruption</div></div>
    </div></div>`;
  }else if(HS_PLAN==='starter'){
+  const b1=billedInfo(150);
   head=`<div class="card"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
    <div style="font-size:30px">📱</div>
    <div style="flex:1"><b style="font-size:16px">Current Plan: ₹150 Starter</b>
-   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app for field staff · ${n} active employee${n!==1?'s':''} · ₹${150*n}/month${HS_ENDS?` · <b style="color:${HS_SUB_DAYS<=7?'var(--red)':'var(--green)'}">Valid till ${HS_ENDS}${HS_SUB_DAYS>=0?' ('+HS_SUB_DAYS+'d left)':''}</b>`:''}</div></div>
+   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app for field staff · ${n} active employee${n!==1?'s':''} · ₹${b1.amt}/month${n<b1.min?' (minimum billing: '+b1.min+' employees)':''}${HS_ENDS?` · <b style="color:${HS_SUB_DAYS<=7?'var(--red)':'var(--green)'}">Valid till ${HS_ENDS}${HS_SUB_DAYS>=0?' ('+HS_SUB_DAYS+'d left)':''}</b>`:''}</div></div>
    <span class="pill present">✓ Active</span>${HS_ENDS?`<button class="btn primary" style="padding:9px 14px;font-size:12.5px" onclick="openPay(150,'Starter')">Renew</button>`:''}</div></div>`;
  }else{
+  const b2=billedInfo(250);
   head=`<div class="card"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
    <div style="font-size:30px">🖥️</div>
    <div style="flex:1"><b style="font-size:16px">Current Plan: ₹250 Professional</b>
-   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app + Desktop panel · ${n} active employee${n!==1?'s':''} · ₹${250*n}/month${HS_ENDS?` · <b style="color:${HS_SUB_DAYS<=7?'var(--red)':'var(--green)'}">Valid till ${HS_ENDS}${HS_SUB_DAYS>=0?' ('+HS_SUB_DAYS+'d left)':''}</b>`:''}</div></div>
+   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app + Desktop panel · ${n} active employee${n!==1?'s':''} · ₹${b2.amt}/month${n<b2.min?' (minimum billing: '+b2.min+' employees)':''}${HS_ENDS?` · <b style="color:${HS_SUB_DAYS<=7?'var(--red)':'var(--green)'}">Valid till ${HS_ENDS}${HS_SUB_DAYS>=0?' ('+HS_SUB_DAYS+'d left)':''}</b>`:''}</div></div>
    <span class="pill present">✓ Active</span>${HS_ENDS?`<button class="btn primary" style="padding:9px 14px;font-size:12.5px" onclick="openPay(250,'Professional')">Renew</button>`:''}</div></div>`;
  }
  el.innerHTML=head;
@@ -515,21 +544,21 @@ function renderBilling(){
    <div style="font-size:26px;font-weight:700;font-family:'Space Grotesk';color:var(--teal);margin:6px 0 2px">₹${rate}<span style="font-size:13px;color:var(--sub)"> /employee/month</span></div>
    <div class="muted" style="font-size:12.5px;margin-bottom:10px">${desc}</div>
    <div style="font-size:12.5px;line-height:2">${feats.map(x=>'✓ '+x).join('<br>')}</div>
-   ${active?'<div class="pill present" style="margin-top:14px">✓ Currently Active</div>'
-    :`<button class="btn primary" style="margin-top:14px;width:100%;justify-content:center" onclick="openPay(${rate},'${title.replace(/'/g,'')}')">Pay ₹${rate*Math.max(activeEmpCount(),1)} &amp; Activate</button>`}
+   <div style="font-size:11.5px;font-weight:800;color:var(--amber);background:var(--amber-soft);border-radius:9px;padding:6px 10px;margin-top:10px">Minimum ${MIN_EMPS[rate]} employees · ₹${rate*MIN_EMPS[rate]}/month minimum${rate===250?' · +₹250 per extra employee':''}</div>
+   ${active?'<div class="pill present" style="margin-top:12px">✓ Currently Active</div>'
+    :`<button class="btn primary" style="margin-top:12px;width:100%;justify-content:center" onclick="openPay(${rate},'${title.replace(/'/g,'')}')">Pay ₹${billedInfo(rate).amt} &amp; Activate</button>`}
   </div>`;
  $('planCards').innerHTML=
   plan(150,'Starter','Mobile app for field staff',['GPS attendance & visit tasks','Visit reports emailed to clients','Excel reports'],HS_PLAN==='starter')+
   plan(250,'Professional','Mobile app + this desktop panel',['Everything in Starter','Desktop management panel','HOD payroll approval','Priority support'],HS_PLAN==='professional');
 }
 function openPay(rate,title){
- const n=Math.max(activeEmpCount(),1);
- const amt=rate*n;
+ const {n,min,bn,amt}=billedInfo(rate);
  const tn=('HamaraStaff '+HS_CODE.toUpperCase()+' '+title+' plan').slice(0,50);
  const upiLink='upi://pay?pa='+encodeURIComponent(HS_UPI)+'&pn='+encodeURIComponent(HS_PAYEE)+'&am='+amt+'&cu=INR&tn='+encodeURIComponent(tn);
  $('modalBody').innerHTML=`
   <b style="font-size:18px">Pay for ${title} Plan</b>
-  <div class="muted" style="font-size:13px;margin-top:4px">${n} active employee${n!==1?'s':''} × ₹${rate} = <b style="color:var(--teal);font-size:15px">₹${amt}/month</b></div>
+  <div class="muted" style="font-size:13px;margin-top:4px">${n<min?n+' active employee'+(n!==1?'s':'')+' — billed at the minimum of '+min:bn+' employee'+(bn!==1?'s':'')} × ₹${rate} = <b style="color:var(--teal);font-size:15px">₹${amt}/month</b></div>
   <div style="display:flex;flex-direction:column;align-items:center;background:var(--bg);border-radius:16px;padding:20px;margin-top:16px">
    <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.5px;margin-bottom:10px">SCAN WITH ANY UPI APP</div>
    <div id="upiQr" style="background:#fff;padding:12px;border-radius:14px"></div>
