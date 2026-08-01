@@ -25,11 +25,47 @@ function hs_wrap_email($inner, $ctaText = '', $ctaUrl = '') {
     . '</td></tr></table></td></tr></table></body></html>';
 }
 
+/* ---- minimal SMTP client (Hostinger: smtp.hostinger.com:465 SSL) ---- */
+function hs_smtp_send($to, $subject, $html) {
+  $host = defined('SMTP_HOST') ? SMTP_HOST : 'smtp.hostinger.com';
+  $port = defined('SMTP_PORT') ? SMTP_PORT : 465;
+  $user = defined('SMTP_USER') ? SMTP_USER : 'info@hamarastaff.com';
+  $pass = defined('SMTP_PASS') ? SMTP_PASS : '';
+  if ($pass === '') return null;                      /* not configured */
+  $fp = @stream_socket_client("ssl://$host:$port", $errno, $errstr, 15);
+  if (!$fp) return false;
+  $read = function() use ($fp) { $d=''; while ($l = fgets($fp, 515)) { $d .= $l; if (strlen($l) < 4 || $l[3] === ' ') break; } return $d; };
+  $cmd  = function($c) use ($fp, $read) { fwrite($fp, $c . "\r\n"); return $read(); };
+  $read();
+  $cmd('EHLO hamarastaff.com');
+  $cmd('AUTH LOGIN'); $cmd(base64_encode($user));
+  $r = $cmd(base64_encode($pass));
+  if (strpos($r, '235') !== 0) { fclose($fp); return false; }
+  $cmd("MAIL FROM:<$user>");
+  $r = $cmd("RCPT TO:<$to>");
+  if (strpos($r, '250') !== 0 && strpos($r, '251') !== 0) { fclose($fp); return false; }
+  $cmd('DATA');
+  $hdr = "From: HamaraStaff <$user>\r\n"
+    . "Reply-To: $user\r\n"
+    . "To: <$to>\r\n"
+    . "Subject: =?UTF-8?B?" . base64_encode($subject) . "?=\r\n"
+    . "MIME-Version: 1.0\r\n"
+    . "Content-Type: text/html; charset=utf-8\r\n"
+    . "Date: " . date('r') . "\r\n"
+    . "Message-ID: <" . uniqid('hs', true) . "@hamarastaff.com>\r\n";
+  fwrite($fp, $hdr . "\r\n" . $html . "\r\n.\r\n");
+  $r = $read();
+  $cmd('QUIT'); fclose($fp);
+  return strpos($r, '250') === 0;
+}
+
 function hs_send_mail($to, $subject, $innerHtml, $ctaText = '', $ctaUrl = '') {
   $html = hs_wrap_email($innerHtml, $ctaText, $ctaUrl);
+  $smtp = hs_smtp_send($to, $subject, $html);
+  if ($smtp !== null) return $smtp;                   /* SMTP configured: its result is final */
   $headers = "MIME-Version: 1.0\r\n"
     . "Content-Type: text/html; charset=utf-8\r\n"
     . "From: HamaraStaff <info@hamarastaff.com>\r\n"
     . "Reply-To: info@hamarastaff.com\r\n";
-  return @mail($to, $subject, $html, $headers);
+  return @mail($to, $subject, $html, $headers);       /* fallback until SMTP is configured */
 }

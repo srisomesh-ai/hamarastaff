@@ -17,5 +17,12 @@ if (!defined('DB_PASS')) define('DB_PASS', 'Simhadriappanna@143');
 if (!defined('SUPER_USER')) define('SUPER_USER', 'someswara');
 if (!defined('SUPER_PASS')) define('SUPER_PASS', 'Hamara@2026');
 
+/* SMTP for outgoing mail — create mailbox info@hamarastaff.com in hPanel > Emails,
+   then set its password here (or in config.local.php): */
+if (!defined('SMTP_HOST')) define('SMTP_HOST', 'smtp.hostinger.com');
+if (!defined('SMTP_PORT')) define('SMTP_PORT', 465);
+if (!defined('SMTP_USER')) define('SMTP_USER', 'info@hamarastaff.com');
+if (!defined('SMTP_PASS')) define('SMTP_PASS', '');   /* <-- mailbox password goes here */
+
 /* secret key for the daily email cron (api/drip.php) */
 if (!defined('DRIP_KEY')) define('DRIP_KEY', 'hs-drip-8k2m9x-2026');
