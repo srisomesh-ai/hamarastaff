@@ -94,9 +94,20 @@ $welcome = "<p>Welcome to HamaraStaff, <b>" . htmlspecialchars($name) . "</b>! &
   . "<p>Need help? Just reply to this email.</p>";
 $mailed = hs_send_mail($email, "Your HamaraStaff free trial is ready — $name", $welcome, "Open My Portal", $portal);
 
-/* notify the owner */
-@mail('info@hamarastaff.com', "New trial signup: $name ($CU)",
-  "Company: $name\nCode: $code\nPortal: $portal\nEmail: $email\nPhone: $phone\nTrial ends: $endsNice", $headers);
+/* notify the owner — full customer details for follow-up */
+$lead = "<p><b>&#127881; New trial signup!</b></p>"
+  . "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='background:#F0F7F6;border-radius:14px'><tr><td style='padding:18px 20px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:2'>"
+  . "<b>Company:</b> " . htmlspecialchars($name) . "<br>"
+  . "<b>Portal:</b> <a href='$portal' style='color:#0E6B63;font-weight:700'>hamarastaff.com/$code/</a><br>"
+  . "<b>Email:</b> <a href='mailto:$email' style='color:#0E6B63'>$email</a><br>"
+  . "<b>Phone:</b> " . ($phone !== '' ? "<a href='tel:$phone' style='color:#0E6B63'>" . htmlspecialchars($phone) . "</a> &middot; <a href='https://wa.me/" . preg_replace('/[^0-9]/', '', $phone) . "' style='color:#1E7B34;font-weight:700'>WhatsApp</a>" : "<i>not given</i>") . "<br>"
+  . "<b>Trial ends:</b> $endsNice<br>"
+  . "<b>Signed up:</b> " . date('d M Y, h:i A') . " IST"
+  . "</td></tr></table>"
+  . "<p style='font-size:13px;color:#5B6E6B'>Reach out within the first day &mdash; fresh trials convert best. Activate them from the owner panel once they pay.</p>";
+foreach (['someswararao.pyle@gmail.com', 'info@hamarastaff.com'] as $ownerTo) {
+  hs_send_mail($ownerTo, "🔔 New trial: $name ($CU) — $email", $lead, "Open Owner Panel", "https://hamarastaff.com/admin.html");
+}
 
 out([
   'code' => $code,
