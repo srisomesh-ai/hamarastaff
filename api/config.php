@@ -22,7 +22,7 @@ if (!defined('SUPER_PASS')) define('SUPER_PASS', 'Hamara@2026');
 if (!defined('SMTP_HOST')) define('SMTP_HOST', 'smtp.hostinger.com');
 if (!defined('SMTP_PORT')) define('SMTP_PORT', 465);
 if (!defined('SMTP_USER')) define('SMTP_USER', 'info@hamarastaff.com');
-if (!defined('SMTP_PASS')) define('SMTP_PASS', '');   /* <-- mailbox password goes here */
+if (!defined('SMTP_PASS')) define('SMTP_PASS', 'Simhadriappanna@143');
 
 /* secret key for the daily email cron (api/drip.php) */
 if (!defined('DRIP_KEY')) define('DRIP_KEY', 'hs-drip-8k2m9x-2026');
