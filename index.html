@@ -153,13 +153,21 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,
 
 /* ---------- PRICING CTA ---------- */
 .pricing{padding:90px 0;text-align:center}
-.price-card{max-width:620px;margin:0 auto;border:2px solid var(--teal);border-radius:26px;padding:46px 30px;background:linear-gradient(180deg,#fff,var(--bg))}
-.price-card .from{font-size:14px;font-weight:800;color:var(--sub)}
-.price-card .amt{font-size:54px;font-weight:700;font-family:'Space Grotesk';color:var(--teal);line-height:1.1}
-.price-card .per{color:var(--sub);font-size:14px;font-weight:700}
-.price-card ul{list-style:none;margin:24px auto;display:inline-block;text-align:left}
-.price-card li{font-size:14px;padding:6px 0 6px 28px;position:relative;font-weight:600}
-.price-card li::before{content:'✓';position:absolute;left:0;color:var(--green);font-weight:800}
+.plans2{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:780px;margin:0 auto 26px;text-align:left}
+@media(max-width:700px){.plans2{grid-template-columns:1fr}}
+.pl{background:#fff;border:1.5px solid var(--line);border-radius:22px;padding:28px 26px;display:flex;flex-direction:column}
+.pl.reco{border:2px solid var(--teal);box-shadow:0 14px 40px rgba(14,107,99,.14);position:relative}
+.pl .tag{position:absolute;top:-12px;left:24px;background:var(--teal);color:#fff;font-size:10.5px;font-weight:800;letter-spacing:.6px;padding:5px 12px;border-radius:99px}
+.pl h3{font-size:16px;font-weight:800}
+.pl .amt{font-size:40px;font-weight:700;font-family:'Space Grotesk';color:var(--teal);line-height:1.15;margin-top:8px}
+.pl .per{color:var(--sub);font-size:12.5px;font-weight:700}
+.pl .min{margin:12px 0 6px;background:var(--bg);border-radius:11px;padding:9px 12px;font-size:12px;font-weight:800;color:var(--ink)}
+.pl ul{list-style:none;margin-top:8px;flex:1}
+.pl li{font-size:13px;padding:5px 0 5px 26px;position:relative;font-weight:600}
+.pl li::before{content:'✓';position:absolute;left:0;top:5px;width:17px;height:17px;border-radius:50%;background:var(--green-soft);color:var(--green);font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.pl li.no{color:#A7B7B4}
+.pl li.no::before{content:'✕';background:#EEF2F1;color:#A7B7B4}
+.pricing .common{font-size:13px;color:var(--sub);font-weight:700;margin-bottom:26px}
 
 /* ---------- CONTACT ---------- */
 .contact{padding:90px 0;background:linear-gradient(160deg,var(--teal-dark),var(--teal) 65%,var(--teal-mid));color:#fff;text-align:center}
@@ -172,7 +180,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,
 .login-mini input{padding:12px 16px;border-radius:12px 0 0 12px;border:none;font-family:inherit;font-size:14px;width:200px;outline:none}
 .login-mini button{padding:12px 18px;border-radius:0 12px 12px 0;border:none;background:var(--teal-dark);color:#fff;font-weight:800;font-family:inherit;cursor:pointer;font-size:13.5px}
 
-footer{background:var(--teal-dark);color:rgba(255,255,255,.8);padding:34px 0;font-size:13px}
+footer{background:var(--teal-dark);color:rgba(255,255,255,.78);padding:46px 0 0;font-size:13px}
+.fgrid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:34px;padding-bottom:34px}
+@media(max-width:700px){.fgrid{grid-template-columns:1fr;gap:26px}}
+.fgrid h4{color:#fff;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+.fgrid a{display:block;color:rgba(255,255,255,.78);text-decoration:none;padding:4px 0;font-weight:600}
+.fgrid a:hover{color:#fff}
+.fgrid .ln{line-height:1.9;font-weight:600}
+.fbar{border-top:1px solid rgba(255,255,255,.14);padding:16px 0;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px;color:rgba(255,255,255,.6)}
 .footin{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
 footer b{color:#fff}
 </style>
@@ -322,19 +337,39 @@ footer b{color:#fff}
   <span class="eyebrow rv">Simple rental pricing</span>
   <h2 class="sec rv">Pay per employee. Cancel anytime.</h2>
   <p class="sec-sub rv">No setup fee — your branded portal with a simple monthly rental per employee. No hidden costs.</p>
-  <div class="price-card rv">
-   <div class="from">STARTS FROM</div>
-   <div class="amt">₹150<span style="font-size:20px">/</span></div>
-   <div class="per">per employee · per month</div>
-   <ul>
-    <li>Your own branded portal — hamarastaff.com/yourcompany</li>
-    <li>Mobile app for staff + desktop panel for management</li>
-    <li>GPS attendance, visit reports & Excel downloads</li>
-    <li>Hosting, support & updates included — no setup fee</li>
-    <li>₹150 plan: minimum 10 employees (₹1,500/month)</li>
-    <li>₹250 plan: minimum ₹5,000/month (20 employees), +₹250 per extra</li>
-   </ul>
-   <a class="btn white" style="background:var(--teal);color:#fff" href="pricing.html">See Full Pricing & Plans →</a>
+  <p class="common rv">Every plan includes your own branded portal (hamarastaff.com/yourcompany), GPS attendance, visit reports, Excel downloads, hosting, support &amp; updates — <b>no setup fee</b>.</p>
+  <div class="plans2 rv">
+   <div class="pl">
+    <h3>Starter</h3>
+    <div class="amt">₹150</div>
+    <div class="per">per employee · per month</div>
+    <div class="min">Minimum 10 employees — ₹1,500/month</div>
+    <ul>
+     <li>Mobile app for field staff</li>
+     <li>GPS attendance &amp; visit tasks</li>
+     <li>Visit reports emailed to clients</li>
+     <li>Excel reports</li>
+     <li class="no">Desktop management panel</li>
+     <li class="no">HOD payroll approval</li>
+    </ul>
+   </div>
+   <div class="pl reco">
+    <span class="tag">MOST POPULAR</span>
+    <h3>Professional</h3>
+    <div class="amt">₹250</div>
+    <div class="per">per employee · per month</div>
+    <div class="min">Minimum ₹5,000/month (20 employees) · +₹250 per extra</div>
+    <ul>
+     <li>Everything in Starter</li>
+     <li>Desktop management panel</li>
+     <li>HOD payroll approval</li>
+     <li>Priority support</li>
+    </ul>
+   </div>
+  </div>
+  <div class="rv" style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+   <a class="btn white" style="background:var(--teal);color:#fff" href="trial.html">🎁 Start Free 7-Day Trial</a>
+   <a class="btn white" style="background:#fff;color:var(--teal);border:1.5px solid var(--teal)" href="pricing.html">See Full Pricing &amp; Plans →</a>
   </div>
  </div>
 </section>
@@ -358,9 +393,32 @@ footer b{color:#fff}
 </section>
 
 <footer>
- <div class="wrap footin">
-  <div><span style="display:inline-block;background:#fff;padding:7px 13px;border-radius:12px;margin-bottom:10px"><img src="assets/logo.png?v=2" alt="HamaraStaff" style="height:30px;display:block"></span><br>GPS Attendance & Field Staff Tracking<br>📞 +91 73309 84620 · ✉️ info@hamarastaff.com<br>A <b>BharatGPS</b> product · Visakhapatnam, India</div>
-  <div>hamarastaff.com · © 2026 All rights reserved</div>
+ <div class="wrap">
+  <div class="fgrid">
+   <div>
+    <span style="display:inline-block;background:#fff;padding:8px 14px;border-radius:13px;margin-bottom:14px"><img src="assets/logo.png?v=2" alt="HamaraStaff" style="height:32px;display:block"></span>
+    <div class="ln">GPS attendance &amp; field-staff tracking for Indian businesses.<br>Your team on the map — attendance, visits and reports, all automatic.</div>
+   </div>
+   <div>
+    <h4>Product</h4>
+    <a href="#features">Features</a>
+    <a href="pricing.html">Pricing</a>
+    <a href="trial.html">Free 7-Day Trial</a>
+    <a href="login.html">Client Login</a>
+   </div>
+   <div>
+    <h4>Contact</h4>
+    <div class="ln">
+     <a href="tel:+917330984620">+91 73309 84620</a>
+     <a href="mailto:info@hamarastaff.com">info@hamarastaff.com</a>
+     Visakhapatnam, India
+    </div>
+   </div>
+  </div>
+  <div class="fbar">
+   <div>© 2026 HamaraStaff · A <b style="color:#fff">BharatGPS</b> product</div>
+   <div>hamarastaff.com · All rights reserved</div>
+  </div>
  </div>
 </footer>
 
