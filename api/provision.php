@@ -13,7 +13,7 @@ if (!is_dir($CLIENTS)) mkdir($CLIENTS, 0755, true);
 
 /* ---- per-client SQL backup download (owner session required) ---- */
 if (($_GET['action'] ?? '') === 'backup') {
-  if (empty($_SESSION['super'])) { http_response_code(403); die('Login required'); }
+  if (($_SESSION['hs_super']??false)!==true) { http_response_code(403); die('Login required'); }
   $code = strtolower(trim($_GET['code'] ?? ''));
   if (!preg_match('/^[a-z0-9][a-z0-9-]{1,19}$/', $code)) die('bad code');
   header('Content-Type: application/sql; charset=utf-8');
