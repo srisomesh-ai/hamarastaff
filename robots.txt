@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /portal/
+Disallow: /clients/
+Disallow: /admin.html
+
+Sitemap: https://hamarastaff.com/sitemap.xml
