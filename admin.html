@@ -165,6 +165,7 @@ async function loadClients(){
     <a class="btn ghost" href="/${c.code}/" target="_blank">Open Portal</a>
     <a class="btn ghost" href="/${c.code}/admin.html" target="_blank">Admin Panel</a>
     <button class="btn ghost" onclick="pickLogo('${c.code}')">${c.logo?'Change Logo':'Set Logo'}</button>
+    <a class="btn ghost" style="text-decoration:none" href="api/provision.php?action=backup&code=${c.code}" download>⬇ Backup</a>
     ${c.plan==='trial'?`<button class="btn primary" style="padding:9px 13px;font-size:12px;border-radius:10px" onclick="activate('${c.code}','professional')">Activate ₹250</button>
     <button class="btn ghost" onclick="activate('${c.code}','starter')">Activate ₹150</button>`
     :`<button class="btn primary" style="padding:9px 13px;font-size:12px;border-radius:10px" onclick="extendClient('${c.code}')">＋ Extend Validity</button>

@@ -1,5 +1,6 @@
 <?php
 require __DIR__ . '/config.php';
+require __DIR__ . '/mailer.php';
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 function out($d){ echo json_encode(['ok'=>true,'data'=>$d]); exit; }
@@ -9,6 +10,33 @@ function requireSuper(){ if(($_SESSION['hs_super']??false)!==true) fail('auth',4
 $ROOT = dirname(__DIR__);
 $CLIENTS = $ROOT . '/clients';
 if (!is_dir($CLIENTS)) mkdir($CLIENTS, 0755, true);
+
+/* ---- per-client SQL backup download (owner session required) ---- */
+if (($_GET['action'] ?? '') === 'backup') {
+  if (empty($_SESSION['super'])) { http_response_code(403); die('Login required'); }
+  $code = strtolower(trim($_GET['code'] ?? ''));
+  if (!preg_match('/^[a-z0-9][a-z0-9-]{1,19}$/', $code)) die('bad code');
+  header('Content-Type: application/sql; charset=utf-8');
+  header('Content-Disposition: attachment; filename="hamarastaff-' . $code . '-backup-' . date('Ymd-His') . '.sql"');
+  $pdo = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_USER, DB_PASS,
+    [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+  echo "-- HamaraStaff backup for client: $code\n-- " . date('Y-m-d H:i:s') . " IST\n\n";
+  foreach (['employees','attendance','tasks','task_events','visit_reports','approvals','audit_log'] as $t) {
+    $tbl = $code . '_' . $t;
+    try {
+      $create = $pdo->query("SHOW CREATE TABLE `$tbl`")->fetch(PDO::FETCH_NUM);
+      echo "DROP TABLE IF EXISTS `$tbl`;\n" . $create[1] . ";\n\n";
+      $rows = $pdo->query("SELECT * FROM `$tbl`");
+      while ($r = $rows->fetch(PDO::FETCH_ASSOC)) {
+        $vals = array_map(fn($v) => $v === null ? 'NULL' : $pdo->quote($v), array_values($r));
+        echo "INSERT INTO `$tbl` (`" . implode('`,`', array_keys($r)) . "`) VALUES (" . implode(',', $vals) . ");\n";
+      }
+      echo "\n";
+    } catch (Exception $e) { echo "-- table $tbl not found\n\n"; }
+  }
+  echo "-- end of backup\n";
+  exit;
+}
 
 $in = json_decode(file_get_contents('php://input'), true) ?: [];
 $action = $in['action'] ?? '';
@@ -114,6 +142,14 @@ case 'create': {
   file_put_contents("$CLIENTS/$code.php",$cfg);
   $logoSaved=saveLogo($CLIENTS,$code,$in['logo']??null);
 
+  /* alert Someswara about every fresh client, owner-created included */
+  try {
+    [$lSub, $lBody, $lCta, $lUrl] = hs_lead_email($name, $code, 'created-by-owner', '', 'no expiry set');
+    $lSub = str_replace('New trial:', 'New client created:', $lSub);
+    foreach (['someswararao.pyle@gmail.com', 'info@hamarastaff.com'] as $ownerTo) {
+      hs_send_mail($ownerTo, $lSub, $lBody, $lCta, $lUrl);
+    }
+  } catch (Exception $e) { /* never block creation on mail issues */ }
   out(['code'=>$code,'url'=>'/'.$code.'/','seeded'=>$seeded,'logo'=>$logoSaved]);
 }
 
