@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "450307605815",
+    "project_id": "hamarastaff",
+    "storage_bucket": "hamarastaff.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:450307605815:android:24504ce81dbe9e278706b2",
+        "android_client_info": {
+          "package_name": "com.hamarastaff.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANVxkBsWq4hogPnPBgiW0x0NkSfngcZoQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
