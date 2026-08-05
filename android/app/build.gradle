@@ -1,0 +1,42 @@
+plugins { id 'com.android.application' }
+
+def ksB64 = System.getenv("KEYSTORE_BASE64")
+def hasSigning = ksB64 != null && !ksB64.isEmpty()
+if (hasSigning) {
+    def ksFile = new File(buildDir, "release.keystore")
+    ksFile.parentFile.mkdirs()
+    ksFile.bytes = ksB64.decodeBase64()
+}
+
+android {
+    namespace 'com.hamarastaff.app'
+    compileSdk 34
+    defaultConfig {
+        applicationId "com.hamarastaff.app"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+    signingConfigs {
+        if (hasSigning) {
+            release {
+                storeFile new File(buildDir, "release.keystore")
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias System.getenv("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (hasSigning) signingConfig signingConfigs.release
+        }
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+}
