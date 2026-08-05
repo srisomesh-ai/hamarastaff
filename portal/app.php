@@ -341,6 +341,11 @@ function getLocation(cb){
 }
 function pillHTML(st){return `<span class="pill ${st}">${st==='open'?'● Open':st==='reached'?'◉ Reached':'✓ Closed'}</span>`}
 
+
+/* ---- push token registration (from Android app) ---- */
+window.hsSetPushToken=function(t){try{localStorage.setItem('hs_push',t)}catch(e){};hsRegisterPush()};
+function hsRegisterPush(){let t=null;try{t=localStorage.getItem('hs_push')}catch(e){};if(!t)return;
+ fetch('api/api.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'push_register',token:t})}).catch(()=>{})}
 let ME=null, MYDAY=null, TASKS=[], empF='all', curTask=null;
 function dayActive(){return MYDAY && !MYDAY.endedAt}
 
@@ -355,7 +360,7 @@ async function boot(){
  if(av)av.textContent=ME.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
  await refresh();
 }
-async function refresh(){
+async function refresh(){hsRegisterPush();
  try{[MYDAY,TASKS]=await Promise.all([api('day_get'),api('task_list')]);}
  catch(e){toast('Network error — check connection');return}
  renderEmp();

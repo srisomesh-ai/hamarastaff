@@ -352,6 +352,11 @@ function pill(st){return `<span class="pill ${st}">${st==='open'?'● Open':st==
 function locTxt(l){return l&&l.lat?`<span class="loc">${l.area} (${l.lat}, ${l.lng})</span>`:'<span class="muted">—</span>'}
 function trItem(x){return `<div class="tr-item ${x.type==='start'?'start':x.type==='close'?'close':''}"><div class="tr-time">${x.t||x.time}</div><div class="tr-main">${x.main||x.text}</div>${x.loc&&x.loc.lat?`<div class="tr-sub">📍 ${locTxt(x.loc)}</div>`:''}${x.note?`<div class="remark-box">"${x.note}"</div>`:''}</div>`}
 
+
+/* ---- push token registration (from Android app) ---- */
+window.hsSetPushToken=function(t){try{localStorage.setItem('hs_push',t)}catch(e){};hsRegisterPush()};
+function hsRegisterPush(){let t=null;try{t=localStorage.getItem('hs_push')}catch(e){};if(!t)return;
+ fetch('api/api.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'push_register',token:t})}).catch(()=>{})}
 let D=null, showPw={};
 function attPill(e){
  if(e.day)return '<span class="pill present">✓ Present</span>';
@@ -364,7 +369,7 @@ async function boot(){
  await loadAll();
  setInterval(()=>loadAll(true),60000); /* auto-refresh every minute */
 }
-async function loadAll(quiet){
+async function loadAll(quiet){hsRegisterPush();
  try{D=await api('admin_overview');render()}
  catch(e){if(!quiet)toast('Could not load data: '+e.message)}
 }

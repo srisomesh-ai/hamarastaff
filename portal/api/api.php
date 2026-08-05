@@ -119,6 +119,12 @@ case 'login': {
   out(['role'=>'emp','name'=>$e['name'],'emp_code'=>$e['emp_code']]);
 }
 
+case 'push_register': {
+  $role=$_SESSION['role']??''; if($role!=='emp'&&$role!=='admin') fail('auth',401);
+  $ok=push_register_token($role, $role==='emp'?(int)$_SESSION['emp_id']:null, trim($in['token']??''));
+  out((bool)$ok);
+}
+
 case 'logout': audit(actorName(),'logout'); $_SESSION=[]; session_destroy(); out(true);
 
 case 'me': {
@@ -136,6 +142,7 @@ case 'day_start': {
   $st=$db->prepare("INSERT IGNORE INTO hs_attendance (emp_id,att_date,start_time,start_lat,start_lng,start_area) VALUES (?,?,NOW(),?,?,?)");
   $st->execute([$eid,date('Y-m-d'),$in['lat']??'',$in['lng']??'',$in['area']??'']);
   audit($_SESSION['emp_name'],'day_start',($in['area']??'').' ('.($in['lat']??'').','.($in['lng']??'').')');
+  push_to_admins('✅ '.$_SESSION['emp_name'].' started the day', ($in['area']??'').' · '.date('h:i A'));
   out(dayFor($eid));
 }
 
@@ -144,6 +151,7 @@ case 'day_end': {
   $db->prepare("UPDATE hs_attendance SET end_time=NOW() WHERE emp_id=? AND att_date=? AND end_time IS NULL")
      ->execute([$eid,date('Y-m-d')]);
   audit($_SESSION['emp_name'],'day_end','');
+  push_to_admins('🏁 '.$_SESSION['emp_name'].' ended the day', date('h:i A'));
   out(dayFor($eid));
 }
 
@@ -156,6 +164,9 @@ case 'task_add': {
   $st=$db->prepare("INSERT INTO hs_tasks (emp_id,doctor,hospital,area,purpose,planned_time,client_email,client_phone,created_by) VALUES (?,?,?,?,?,?,?,?,?)");
   $st->execute([$empId,trim($in['doctor']),$in['hospital']??'',$in['area']??'',$in['purpose']??'',$in['planned']??'',$in['email']??'',$in['phone']??'',$role==='admin'?'Manager':'Self']);
   audit(actorName(),'task_create',$in['doctor'].' / '.($in['hospital']??''));
+  if($role==='admin'){
+    push_to_emp($empId,'New visit assigned 📋', trim($in['doctor']).($in['hospital']?' — '.$in['hospital']:'').' · '.($in['planned']!==''?('at '.$in['planned']):'today'));
+  }
   out(true);
 }
 
@@ -168,6 +179,7 @@ case 'task_reach': {
   $db->prepare("INSERT INTO hs_task_events (task_id,type,event_time,lat,lng,area) VALUES (?,'reach',NOW(),?,?,?)")
      ->execute([$tid,$in['lat']??'',$in['lng']??'',$in['area']??'']);
   audit($_SESSION['emp_name'],'task_reach',$t['doctor'].' @ '.($in['area']??''));
+  push_to_admins('📍 '.$_SESSION['emp_name'].' reached '.$t['doctor'], ($t['hospital']?:'').' '.date('h:i A'));
   out(true);
 }
 
@@ -186,6 +198,7 @@ case 'task_close': {
      ->execute([$tid,$in['met']??'',json_encode($in['products']??[]),$in['demo']??'No',(int)($in['samples']??0),
        $in['outcome']??'',$in['remarks']??'', ($in['next']??'')?:null, !empty($in['lat'])?1:0, $sent]);
   audit($_SESSION['emp_name'],'task_close',$t['doctor'].' — '.($in['outcome']??''));
+  push_to_admins('📝 '.$_SESSION['emp_name'].' closed visit: '.$t['doctor'], 'Outcome: '.substr($in['outcome']??'',0,60));
   /* backend email to client (Hostinger mail) */
   if(in_array('Email',$in['sent']??[]) && filter_var($t['client_email'],FILTER_VALIDATE_EMAIL)){
     $body="Dear {$t['doctor']},\n\nThank you for your time today. Summary of our visit:\n\n"

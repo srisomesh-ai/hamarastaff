@@ -1,4 +1,6 @@
 plugins { id 'com.android.application' }
+def hasFirebase = file('google-services.json').exists()
+if (hasFirebase) apply plugin: 'com.google.gms.google-services'
 
 def ksB64 = System.getenv("KEYSTORE_BASE64")
 def hasSigning = ksB64 != null && !ksB64.isEmpty()
@@ -35,9 +37,18 @@ android {
         }
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    if (!hasFirebase) {
+        sourceSets {
+            main { java { exclude 'com/hamarastaff/app/PushService.java', 'com/hamarastaff/app/PushBridge.java' } }
+        }
+    }
 }
 dependencies {
     implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.22')
+    if (file('google-services.json').exists()) {
+        implementation platform('com.google.firebase:firebase-bom:33.1.2')
+        implementation 'com.google.firebase:firebase-messaging'
+    }
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 }

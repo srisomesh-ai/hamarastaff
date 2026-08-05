@@ -106,6 +106,23 @@ public class MainActivity extends AppCompatActivity {
         } else {
             web.restoreState(savedInstanceState);
         }
+
+        // notification permission (Android 13+)
+        if (Build.VERSION.SDK_INT >= 33 &&
+                ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS}, 102);
+        }
+
+        // push token bridge (only present when Firebase is configured)
+        web.postDelayed(() -> {
+            try {
+                Class.forName("com.hamarastaff.app.PushBridge")
+                        .getMethod("init", MainActivity.class, WebView.class)
+                        .invoke(null, this, web);
+            } catch (Throwable ignored) { }
+        }, 2500);
     }
 
     @Override
