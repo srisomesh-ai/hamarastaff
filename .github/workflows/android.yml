@@ -15,7 +15,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v3
         with: { gradle-version: '8.7' }
       - name: Build debug APK (for testing)
-        run: gradle :app:assembleDebug
+        run: |
+          set -o pipefail
+          gradle :app:assembleDebug --stacktrace 2>&1 | tee build.log
+      - name: Surface build errors
+        if: failure()
+        run: |
+          echo "::error::===== BUILD FAILED — key lines ====="
+          grep -n "error:\|FAILURE:\|Caused by\|What went wrong" build.log | head -30 | while IFS= read -r l; do echo "::error::$l"; done
+          tail -30 build.log | while IFS= read -r l; do echo "::error::TAIL: $l"; done
       - name: Build release AAB (for Play Store)
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
