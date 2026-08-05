@@ -1,1 +1,6 @@
 **/config.local.php
+# client portal configs are created on the server (owner panel / trial signup)
+# and must NEVER be in git — a deploy would resurrect deleted clients
+clients/*.php
+clients/*.png
+!clients/.gitkeep
