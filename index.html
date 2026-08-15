@@ -499,5 +499,16 @@ function goPortal(){
  location.href='/'+c+'/';
 }
 </script>
+<script>
+/* hide Google Play badges inside the Android app (WebView UA contains '; wv' or our app marker) */
+(function(){
+ var ua=navigator.userAgent||'';
+ if(/; wv\)/.test(ua) || /HamaraStaffApp/.test(ua)){
+  document.querySelectorAll('a[href*="play.google.com"]').forEach(function(a){
+   var box=a.closest('div')||a; box.style.display='none';
+  });
+ }
+})();
+</script>
 </body>
 </html>

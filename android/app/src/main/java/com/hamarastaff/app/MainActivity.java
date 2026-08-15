@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
         s.setLoadWithOverviewMode(true);
         s.setUseWideViewPort(true);
         s.setSupportZoom(false);
+        s.setUserAgentString(s.getUserAgentString() + " HamaraStaffApp");
 
         web.setWebViewClient(new WebViewClient() {
             @Override
