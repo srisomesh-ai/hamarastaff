@@ -22,7 +22,7 @@ if ($mode === 'signup') {
   [$s1, $b1, $c1, $u1] = hs_welcome_email('Demo Test Company', 'demotest', 'HSdemo12@34', $endsNice);
   $ok1 = hs_send_mail($to, "[TEST] $s1", $b1, $c1, $u1);
   echo "1) Client welcome email -> $to : " . ($ok1 ? "SENT" : "FAILED") . "\n";
-  [$s2, $b2, $c2, $u2] = hs_lead_email('Demo Test Company', 'demotest', $to, '+917330984620', $endsNice);
+  [$s2, $b2, $c2, $u2] = hs_lead_email('Demo Test Company', 'demotest', $to, '+919346220090', $endsNice);
   $ok2 = hs_send_mail('someswararao.pyle@gmail.com', "[TEST] $s2", $b2, $c2, $u2);
   echo "2) Admin lead alert -> someswararao.pyle@gmail.com : " . ($ok2 ? "SENT" : "FAILED") . "\n";
   $ok3 = hs_send_mail('info@hamarastaff.com', "[TEST] $s2", $b2, $c2, $u2);
