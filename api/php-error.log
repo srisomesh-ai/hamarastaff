@@ -1,8 +1,0 @@
-[15-Aug-2026 15:27:57 Asia/Kolkata] after-hook: Call to undefined function push_to_admins()
-[15-Aug-2026 15:27:57 Asia/Kolkata] after-hook: Call to undefined function push_to_admins()
-[15-Aug-2026 15:27:57 Asia/Kolkata] PHP Fatal error:  Uncaught PDOException: SQLSTATE[22007]: Invalid datetime format: 1292 Incorrect date value: '18-08-2026' for column `u943205660_pavanmidway`.`hookt_visit_reports`.`next_visit` at row 1 in /home/claude/hs/portal/api/api.php:243
-Stack trace:
-#0 /home/claude/hs/portal/api/api.php(243): PDOStatement->execute()
-#1 /home/claude/hs/router-test.php(4): include('...')
-#2 {main}
-  thrown in /home/claude/hs/portal/api/api.php on line 243

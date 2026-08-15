@@ -1,5 +1,7 @@
 <?php
 require __DIR__ . '/../boot.php';
+require __DIR__ . '/push.php';
+ob_start();
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
@@ -234,24 +236,33 @@ case 'task_close': {
   $t=$st->fetch(); if(!$t) fail('notfound',404);
   if($t['status']==='closed') fail('wrong_status');
   $sent = is_array($in['sent']??null) ? implode('+',$in['sent']) : '';
-  $db->prepare("UPDATE hs_tasks SET status='closed' WHERE id=?")->execute([$tid]);
-  $db->prepare("INSERT INTO hs_task_events (task_id,type,event_time,lat,lng,area) VALUES (?,'close',NOW(),?,?,?)")
-     ->execute([$tid,$in['lat']??'',$in['lng']??'',$in['area']??'']);
+  /* normalize next-visit date: accepts 2026-08-18, 18-08-2026, 18/08/2026 etc */
+  $nextRaw = trim($in['next']??'');
+  $next = null;
+  if ($nextRaw !== '') {
+    $try = preg_match('#^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$#',$nextRaw,$m) ? "$m[3]-$m[2]-$m[1]" : $nextRaw;
+    $ts = strtotime($try);
+    if ($ts) $next = date('Y-m-d',$ts);
+  }
+  /* save the report FIRST — if anything fails, the task stays open for retry */
   $db->prepare("INSERT INTO hs_visit_reports (task_id,met,products,demo_given,samples,outcome,remarks,next_visit,loc_attached,sent_via,closed_at)
      VALUES (?,?,?,?,?,?,?,?,?,?,NOW())
      ON DUPLICATE KEY UPDATE met=VALUES(met)")
      ->execute([$tid,$in['met']??'',json_encode($in['products']??[]),$in['demo']??'No',(int)($in['samples']??0),
-       $in['outcome']??'',$in['remarks']??'', ($in['next']??'')?:null, !empty($in['lat'])?1:0, $sent]);
+       $in['outcome']??'',$in['remarks']??'', $next, !empty($in['lat'])?1:0, $sent]);
+  $db->prepare("INSERT INTO hs_task_events (task_id,type,event_time,lat,lng,area) VALUES (?,'close',NOW(),?,?,?)")
+     ->execute([$tid,$in['lat']??'',$in['lng']??'',$in['area']??'']);
+  $db->prepare("UPDATE hs_tasks SET status='closed' WHERE id=?")->execute([$tid]);
   audit($_SESSION['emp_name'],'task_close',$t['doctor'].' — '.($in['outcome']??''));
   $n=$_SESSION['emp_name']; $doc=$t['doctor']; $oc=substr($in['outcome']??'',0,60);
   hs_after(function() use($n,$doc,$oc){ push_to_admins('📝 '.$n.' closed visit: '.$doc, 'Outcome: '.$oc); });
   /* auto follow-up task when a next-visit date is given (visit stays in pipeline) */
   $followUp=false;
-  if(!empty($in['next'])){
+  if($next){
     $db->prepare("INSERT INTO hs_tasks (emp_id,doctor,hospital,area,purpose,planned_time,client_email,client_phone,created_by) VALUES (?,?,?,?,?,?,?,?,?)")
-       ->execute([$eid,$t['doctor'],$t['hospital'],$t['area'],'Follow-up · '.$t['purpose'],$in['next'],$t['client_email'],$t['client_phone'],'Follow-up']);
+       ->execute([$eid,$t['doctor'],$t['hospital'],$t['area'],'Follow-up · '.$t['purpose'],date('d M',strtotime($next)),$t['client_email'],$t['client_phone'],'Follow-up']);
     $followUp=true;
-    audit($_SESSION['emp_name'],'task_create','Follow-up: '.$t['doctor'].' on '.$in['next']);
+    audit($_SESSION['emp_name'],'task_create','Follow-up: '.$t['doctor'].' on '.$next);
   }
   /* branded visit summary email via SMTP */
   if(in_array('Email',$in['sent']??[]) && filter_var($t['client_email'],FILTER_VALIDATE_EMAIL)){
