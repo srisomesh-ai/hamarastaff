@@ -326,20 +326,33 @@ async function api(action,data={}){
  }
  return j.data;
 }
+async function resolvePlace(lat,lng){
+ try{
+  const r=await fetch('api/api.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'revgeo',lat,lng})});
+  const j=await r.json();
+  if(j.ok&&j.data.name)return j.data.name;
+ }catch(e){}
+ return 'Live GPS';
+}
 function getLocation(cb){
  if(!navigator.geolocation){toast('This device does not support GPS');return}
  toast('Getting GPS location…');
  navigator.geolocation.getCurrentPosition(
-  p=>cb({lat:p.coords.latitude.toFixed(5),lng:p.coords.longitude.toFixed(5),area:'Live GPS'}),
+  async p=>{
+   const lat=p.coords.latitude.toFixed(5),lng=p.coords.longitude.toFixed(5);
+   const area=await resolvePlace(lat,lng);
+   cb({lat,lng,area});
+  },
   err=>{
    if(err.code===1)toast('Location permission denied — please allow location for this site and try again');
    else if(err.code===3)toast('GPS timed out — move to open sky / near a window and try again');
    else if(err.code===2)toast('Location is OFF on this phone — turn ON Location/GPS in settings, then try again');
    else toast('Could not get GPS location — please try again');
   },
-  {enableHighAccuracy:true,timeout:20000,maximumAge:15000}
+  {enableHighAccuracy:true,timeout:25000,maximumAge:0}
  );
 }
+function mapLink(lat,lng,area){return `<a href="https://maps.google.com/?q=${lat},${lng}" target="_blank" style="color:inherit;text-decoration:underline">${area||'Map'}</a>`}
 function pillHTML(st){return `<span class="pill ${st}">${st==='open'?'● Open':st==='reached'?'◉ Reached':'✓ Closed'}</span>`}
 
 
@@ -385,7 +398,7 @@ function renderEmp(){
  $('dayCard').innerHTML = d
  ? `<div style="font-size:12px;opacity:.85;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Day Started</div>
     <div class="big num">${d.startedAt}</div>
-    <div class="locline">📍 ${d.startLoc.area} · ${d.startLoc.lat}, ${d.startLoc.lng}</div>
+    <div class="locline">📍 ${mapLink(d.startLoc.lat,d.startLoc.lng,d.startLoc.area)}</div>
     ${d.endedAt?`<div class="locline">🏁 Day ended at ${d.endedAt}</div>`:`<button class="btn" onclick="endDay()">End My Day</button>`}`
  : `<div style="font-size:12px;opacity:.85;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Good morning${first?', '+first:''}</div>
     <div class="big">Ready to start?</div>
@@ -425,7 +438,7 @@ function openTask(id){curTask=TASKS.find(t=>t.id===id);renderTaskDetail();show('
 function backFromDetail(){history.back()}
 function trItem(x){return `<div class="tr-item ${x.type==='start'?'start':x.type==='close'?'close':''}">
  <div class="tr-time">${x.t}</div><div class="tr-main">${x.main}</div>
- ${x.loc&&x.loc.lat?`<div class="tr-sub">📍 <span class="loc">${x.loc.area} (${x.loc.lat}, ${x.loc.lng})</span></div>`:''}
+ ${x.loc&&x.loc.lat?`<div class="tr-sub">📍 <span class="loc">${mapLink(x.loc.lat,x.loc.lng,x.loc.area)}</span></div>`:''}
  ${x.note?`<div class="remark-box">"${x.note}"</div>`:''}
 </div>`}
 function renderTaskDetail(){

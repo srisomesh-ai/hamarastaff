@@ -349,7 +349,7 @@ async function api(action,data={}){
  return j.data;
 }
 function pill(st){return `<span class="pill ${st}">${st==='open'?'● Open':st==='reached'?'◉ Reached':'✓ Closed'}</span>`}
-function locTxt(l){return l&&l.lat?`<span class="loc">${l.area} (${l.lat}, ${l.lng})</span>`:'<span class="muted">—</span>'}
+function locTxt(l){return l&&l.lat?`<a href="https://maps.google.com/?q=${l.lat},${l.lng}" target="_blank" style="color:var(--teal);font-weight:700;text-decoration:none">📍 ${l.area&&l.area!=='Live GPS'?l.area:'View on Map'}</a>`:'<span class="muted">—</span>'}
 function trItem(x){return `<div class="tr-item ${x.type==='start'?'start':x.type==='close'?'close':''}"><div class="tr-time">${x.t||x.time}</div><div class="tr-main">${x.main||x.text}</div>${x.loc&&x.loc.lat?`<div class="tr-sub">📍 ${locTxt(x.loc)}</div>`:''}${x.note?`<div class="remark-box">"${x.note}"</div>`:''}</div>`}
 
 

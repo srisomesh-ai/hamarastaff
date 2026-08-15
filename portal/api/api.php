@@ -119,6 +119,32 @@ case 'login': {
   out(['role'=>'emp','name'=>$e['name'],'emp_code'=>$e['emp_code']]);
 }
 
+case 'revgeo': {
+  $role=$_SESSION['role']??''; if($role!=='emp'&&$role!=='admin') fail('auth',401);
+  $lat=(float)($in['lat']??0); $lng=(float)($in['lng']??0);
+  if(!$lat||!$lng) fail('missing');
+  $latr=round($lat,4); $lngr=round($lng,4);
+  $db->exec("CREATE TABLE IF NOT EXISTS hs_geo_cache (latr DECIMAL(9,4), lngr DECIMAL(9,4), name VARCHAR(180), PRIMARY KEY(latr,lngr)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+  $st=$db->prepare("SELECT name FROM hs_geo_cache WHERE latr=? AND lngr=?"); $st->execute([$latr,$lngr]);
+  if($r=$st->fetch()) out(['name'=>$r['name']]);
+  $name='';
+  $ch=curl_init("https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=$lat&lon=$lng&zoom=16&addressdetails=1&accept-language=en");
+  curl_setopt_array($ch,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_TIMEOUT=>6,
+    CURLOPT_HTTPHEADER=>['User-Agent: HamaraStaff/1.0 (info@hamarastaff.com)']]);
+  $j=json_decode((string)curl_exec($ch),true); curl_close($ch);
+  if($j && !empty($j['address'])){
+    $a=$j['address'];
+    $p1=$a['neighbourhood']??$a['suburb']??$a['village']??$a['hamlet']??$a['road']??$a['city_district']??'';
+    $p2=$a['city']??$a['town']??$a['municipality']??$a['county']??$a['state_district']??'';
+    $name=trim($p1.($p1&&$p2?', ':'').$p2);
+    if($name==='') $name=implode(', ',array_slice(explode(', ',$j['display_name']??''),0,2));
+  }
+  if($name!==''){
+    $db->prepare("INSERT IGNORE INTO hs_geo_cache (latr,lngr,name) VALUES (?,?,?)")->execute([$latr,$lngr,substr($name,0,180)]);
+  }
+  out(['name'=>$name]);
+}
+
 case 'push_register': {
   $role=$_SESSION['role']??''; if($role!=='emp'&&$role!=='admin') fail('auth',401);
   $ok=push_register_token($role, $role==='emp'?(int)$_SESSION['emp_id']:null, trim($in['token']??''));

@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.HamaraStaff" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:statusBarColor">#083D38</item>
+        <item name="android:windowBackground">#F4F8F7</item>
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+    </style>
+</resources>
