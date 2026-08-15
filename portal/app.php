@@ -334,6 +334,7 @@ function getLocation(cb){
   err=>{
    if(err.code===1)toast('Location permission denied — please allow location for this site and try again');
    else if(err.code===3)toast('GPS timed out — move to open sky / near a window and try again');
+   else if(err.code===2)toast('Location is OFF on this phone — turn ON Location/GPS in settings, then try again');
    else toast('Could not get GPS location — please try again');
   },
   {enableHighAccuracy:true,timeout:20000,maximumAge:15000}
