@@ -20,6 +20,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 public class MainActivity extends AppCompatActivity {
@@ -39,6 +41,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        View topInset = findViewById(R.id.topInset);
+        View bottomInset = findViewById(R.id.bottomInset);
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
+            androidx.core.graphics.Insets sb = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            topInset.getLayoutParams().height = sb.top;
+            topInset.requestLayout();
+            bottomInset.getLayoutParams().height = sb.bottom;
+            bottomInset.requestLayout();
+            return insets;
+        });
 
         web = findViewById(R.id.web);
         progress = findViewById(R.id.progress);
