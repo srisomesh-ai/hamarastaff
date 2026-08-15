@@ -116,7 +116,7 @@ async function goPortal(){
  btn.disabled=true;btn.textContent='Checking your portal…';
  try{
   const r=await fetch('/'+c+'/',{method:'HEAD',cache:'no-store'});
-  if(r.ok){btn.textContent='Opening '+c.toUpperCase()+' portal ✓';location.href='/'+c+'/';return}
+  if(r.ok){btn.textContent='Opening '+c.toUpperCase()+' portal ✓';location.replace('/'+c+'/');return}
   throw new Error('nf');
  }catch(e){
   err.innerHTML='We couldn\'t find a portal for <b>'+$('code').value+'</b>. Please check the code with your administrator, or <a href="/#contact">contact us</a> to get set up.';
