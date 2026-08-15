@@ -97,8 +97,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        swipe.setOnRefreshListener(() -> web.reload());
-        swipe.setColorSchemeColors(0xFF0E6B63);
+        swipe.setEnabled(false);   /* pull-to-refresh disabled: it hijacked scroll-up on inner-scrolling pages */
 
         if (savedInstanceState == null) {
             web.loadUrl(HOME_URL);
