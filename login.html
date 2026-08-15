@@ -127,6 +127,7 @@ async function goPortal(){
   document.querySelectorAll('a[href*="play.google.com"]').forEach(function(a){
    var box=a.closest('div')||a; box.style.display='none';
   });
+  document.querySelectorAll('a.back').forEach(function(a){a.style.display='none'});
  }
 })();
 </script>
