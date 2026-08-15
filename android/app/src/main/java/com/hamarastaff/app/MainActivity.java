@@ -48,8 +48,6 @@ public class MainActivity extends AppCompatActivity {
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setGeolocationEnabled(true);
-        s.setLoadWithOverviewMode(true);
-        s.setUseWideViewPort(true);
         s.setSupportZoom(false);
         s.setUserAgentString(s.getUserAgentString() + " HamaraStaffApp");
 

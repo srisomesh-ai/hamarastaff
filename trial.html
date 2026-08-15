@@ -22,6 +22,9 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Manrope',sans-serif;min-height:100vh;color:var(--ink);display:grid;grid-template-columns:1fr 1.1fr}
 @media(max-width:860px){body{grid-template-columns:1fr}.side{display:none}}
+html.in-app body{display:block}
+html.in-app .side{display:none}
+html.in-app .pane{min-height:100vh;align-items:flex-start;padding-top:26px}
 .side{background:radial-gradient(600px 400px at 80% 10%,rgba(18,133,123,.6),transparent),linear-gradient(160deg,var(--teal-dark),var(--teal) 70%,var(--teal-mid));color:#fff;display:flex;flex-direction:column;justify-content:space-between;padding:40px 44px}
 .side h2{font-size:clamp(24px,2.8vw,34px);font-weight:800;line-height:1.25;max-width:400px}
 ul.perks{list-style:none;margin-top:26px}
@@ -156,6 +159,7 @@ async function signup(){
 (function(){
  var ua=navigator.userAgent||'';
  if(/; wv\)/.test(ua) || /HamaraStaffApp/.test(ua)){
+  document.documentElement.classList.add('in-app');
   document.querySelectorAll('a[href*="play.google.com"]').forEach(function(a){
    var box=a.closest('div')||a; box.style.display='none';
   });
