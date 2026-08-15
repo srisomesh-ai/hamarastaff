@@ -318,11 +318,16 @@ const PRODUCTS=['Cardio-Z 40','Neurofast SR','GlucoCare Plus','OrthoFlex Gel','P
 const $=id=>document.getElementById(id);
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600)}
 async function api(action,data={}){
- const r=await fetch('api/api.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})});
- let j=null;try{j=await r.json()}catch(e){}
+ let r,txt='';
+ try{
+  r=await fetch('api/api.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,...data})});
+  txt=await r.text();
+ }catch(e){throw new Error('No internet — check your connection and try again')}
+ let j=null;try{j=JSON.parse(txt)}catch(e){}
  if(!j||!j.ok){
   if(j&&j.error==='auth'){location.href='./';throw new Error('auth')}
-  throw new Error(j&&j.error?j.error:'network')
+  if(j&&j.error)throw new Error(j.error);
+  throw new Error('Server error ['+(r?r.status:'?')+']: '+(txt?txt.replace(/<[^>]*>/g,' ').slice(0,110):'empty response'));
  }
  return j.data;
 }

@@ -3,8 +3,23 @@ require __DIR__ . '/../boot.php';
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
-function out($data){ while(ob_get_level())ob_end_clean(); echo json_encode(['ok'=>true,'data'=>$data]); exit; }
-function fail($err,$code=400){ while(ob_get_level())ob_end_clean(); http_response_code($code); echo json_encode(['ok'=>false,'error'=>$err]); exit; }
+$HS_AFTER = [];
+function hs_after($cb){ global $HS_AFTER; $HS_AFTER[] = $cb; }
+function out($data){
+  global $HS_AFTER;
+  while(ob_get_level()) ob_end_clean();
+  header('Content-Type: application/json; charset=utf-8');
+  $body = json_encode(['ok'=>true,'data'=>$data]);
+  header('Content-Length: ' . strlen($body));
+  echo $body;
+  /* flush the response to the user BEFORE running notifications/emails */
+  if (function_exists('fastcgi_finish_request')) @fastcgi_finish_request();
+  elseif (function_exists('litespeed_finish_request')) @litespeed_finish_request();
+  else { @ob_flush(); @flush(); }
+  foreach ($HS_AFTER as $cb) { try { $cb(); } catch (Throwable $e) { @error_log('after-hook: '.$e->getMessage()); } }
+  exit;
+}
+function fail($err,$code=400){ while(ob_get_level())ob_end_clean(); http_response_code($code); header('Content-Type: application/json; charset=utf-8'); echo json_encode(['ok'=>false,'error'=>$err]); exit; }
 function fmt($dt){ return $dt ? date('h:i a', strtotime($dt)) : null; }
 function initials($name){ $p=preg_split('/\s+/',trim($name)); $i=''; foreach(array_slice($p,0,2) as $w) $i.=strtoupper(substr($w,0,1)); return $i?:'?'; }
 function audit($actor,$action,$details=''){ try{ db()->prepare("INSERT INTO hs_audit_log (actor,action,details) VALUES (?,?,?)")->execute([$actor,$action,$details]); }catch(Exception $e){} }
@@ -168,7 +183,8 @@ case 'day_start': {
   $st=$db->prepare("INSERT IGNORE INTO hs_attendance (emp_id,att_date,start_time,start_lat,start_lng,start_area) VALUES (?,?,NOW(),?,?,?)");
   $st->execute([$eid,date('Y-m-d'),$in['lat']??'',$in['lng']??'',$in['area']??'']);
   audit($_SESSION['emp_name'],'day_start',($in['area']??'').' ('.($in['lat']??'').','.($in['lng']??'').')');
-  push_to_admins('✅ '.$_SESSION['emp_name'].' started the day', ($in['area']??'').' · '.date('h:i A'));
+  $n=$_SESSION['emp_name']; $ar=$in['area']??'';
+  hs_after(function() use($n,$ar){ push_to_admins('✅ '.$n.' started the day', $ar.' · '.date('h:i A')); });
   out(dayFor($eid));
 }
 
@@ -177,7 +193,8 @@ case 'day_end': {
   $db->prepare("UPDATE hs_attendance SET end_time=NOW() WHERE emp_id=? AND att_date=? AND end_time IS NULL")
      ->execute([$eid,date('Y-m-d')]);
   audit($_SESSION['emp_name'],'day_end','');
-  push_to_admins('🏁 '.$_SESSION['emp_name'].' ended the day', date('h:i A'));
+  $n=$_SESSION['emp_name'];
+  hs_after(function() use($n){ push_to_admins('🏁 '.$n.' ended the day', date('h:i A')); });
   out(dayFor($eid));
 }
 
@@ -191,7 +208,8 @@ case 'task_add': {
   $st->execute([$empId,trim($in['doctor']),$in['hospital']??'',$in['area']??'',$in['purpose']??'',$in['planned']??'',$in['email']??'',$in['phone']??'',$role==='admin'?'Manager':'Self']);
   audit(actorName(),'task_create',$in['doctor'].' / '.($in['hospital']??''));
   if($role==='admin'){
-    push_to_emp($empId,'New visit assigned 📋', trim($in['doctor']).($in['hospital']?' — '.$in['hospital']:'').' · '.($in['planned']!==''?('at '.$in['planned']):'today'));
+    $eid2=$empId; $msg=trim($in['doctor']).(($in['hospital']??'')?' — '.$in['hospital']:'').' · '.(($in['planned']??'')!==''?('at '.$in['planned']):'today');
+    hs_after(function() use($eid2,$msg){ push_to_emp($eid2,'New visit assigned 📋', $msg); });
   }
   out(true);
 }
@@ -205,7 +223,8 @@ case 'task_reach': {
   $db->prepare("INSERT INTO hs_task_events (task_id,type,event_time,lat,lng,area) VALUES (?,'reach',NOW(),?,?,?)")
      ->execute([$tid,$in['lat']??'',$in['lng']??'',$in['area']??'']);
   audit($_SESSION['emp_name'],'task_reach',$t['doctor'].' @ '.($in['area']??''));
-  push_to_admins('📍 '.$_SESSION['emp_name'].' reached '.$t['doctor'], ($t['hospital']?:'').' '.date('h:i A'));
+  $n=$_SESSION['emp_name']; $doc=$t['doctor']; $hos=$t['hospital']?:'';
+  hs_after(function() use($n,$doc,$hos){ push_to_admins('📍 '.$n.' reached '.$doc, $hos.' '.date('h:i A')); });
   out(true);
 }
 
@@ -224,7 +243,8 @@ case 'task_close': {
      ->execute([$tid,$in['met']??'',json_encode($in['products']??[]),$in['demo']??'No',(int)($in['samples']??0),
        $in['outcome']??'',$in['remarks']??'', ($in['next']??'')?:null, !empty($in['lat'])?1:0, $sent]);
   audit($_SESSION['emp_name'],'task_close',$t['doctor'].' — '.($in['outcome']??''));
-  push_to_admins('📝 '.$_SESSION['emp_name'].' closed visit: '.$t['doctor'], 'Outcome: '.substr($in['outcome']??'',0,60));
+  $n=$_SESSION['emp_name']; $doc=$t['doctor']; $oc=substr($in['outcome']??'',0,60);
+  hs_after(function() use($n,$doc,$oc){ push_to_admins('📝 '.$n.' closed visit: '.$doc, 'Outcome: '.$oc); });
   /* auto follow-up task when a next-visit date is given (visit stays in pipeline) */
   $followUp=false;
   if(!empty($in['next'])){
@@ -235,6 +255,9 @@ case 'task_close': {
   }
   /* branded visit summary email via SMTP */
   if(in_array('Email',$in['sent']??[]) && filter_var($t['client_email'],FILTER_VALIDATE_EMAIL)){
+    $T=$t; $IN=$in; $EN=$_SESSION['emp_name'];
+    hs_after(function() use($T,$IN,$EN){
+    $t=$T; $in=$IN; $_SESSION['emp_name']=$EN;
     require_once dirname(__DIR__,2).'/api/mailer.php';
     $body="<p>Dear ".htmlspecialchars($t['doctor']).",</p>"
       ."<p>Thank you for your time today. Here is a summary of our visit:</p>"
@@ -249,6 +272,7 @@ case 'task_close': {
       ."</td></tr></table>"
       ."<p>Regards,<br><b>".htmlspecialchars(COMPANY_NAME)."</b> Field Team</p>";
     @hs_send_mail($t['client_email'],'Visit Summary — '.COMPANY_NAME,$body);
+    });
   }
   out(['followUp'=>$followUp]);
 }
