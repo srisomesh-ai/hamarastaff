@@ -1,4 +1,8 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors','0');           /* warnings must never leak into JSON responses */
+ini_set('log_errors','1');
+ini_set('error_log', dirname(__DIR__).'/api/php-error.log');
 /* ============ HamaraStaff PORTAL BOOTSTRAP ============
    One shared codebase for ALL clients.
    Tenant is resolved from ?c= (set by .htaccess rewrite):

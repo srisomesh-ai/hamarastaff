@@ -33,8 +33,8 @@ function push_register_token($role, $empId, $token) {
 }
 
 function push_access_token() {
-  $cache = sys_get_temp_dir() . '/hs_fcm_token.json';
-  if (file_exists($cache)) {
+  $cache = __DIR__ . '/fcm_token_cache.json';
+  if (@file_exists($cache)) {
     $c = json_decode(file_get_contents($cache), true);
     if ($c && $c['exp'] > time() + 60) return $c['tok'];
   }
@@ -56,7 +56,7 @@ function push_access_token() {
   $res = json_decode(curl_exec($ch), true);
   curl_close($ch);
   if (empty($res['access_token'])) return null;
-  file_put_contents($cache, json_encode(['tok' => $res['access_token'], 'exp' => $now + (int)($res['expires_in'] ?? 3600)]));
+  @file_put_contents($cache, json_encode(['tok' => $res['access_token'], 'exp' => $now + (int)($res['expires_in'] ?? 3600)]));
   return $res['access_token'];
 }
 

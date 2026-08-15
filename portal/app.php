@@ -463,8 +463,10 @@ function renderTaskDetail(){
 }
 function markReached(){
  getLocation(async loc=>{
-  try{await api('task_reach',{id:curTask.id,...loc});toast('Reached location saved ✓');await refresh()}
-  catch(e){toast(e.message&&e.message.length>12?e.message:'Could not save — try again')}
+  let saved=false;
+  try{await api('task_reach',{id:curTask.id,...loc});saved=true;toast('Reached location saved ✓ '+(loc.area||''))}
+  catch(e){toast(e.message&&e.message.length>12?e.message:'Could not save — try again');return}
+  try{await refresh()}catch(e){}
  });
 }
 
@@ -490,15 +492,19 @@ function submitVisit(){
    demo:$('vfDemo').querySelector('.on').textContent,samples:$('vfSamples').value||0,
    outcome:$('vfOutcome').value,remarks,next:$('vfNext').value,sent};
   if(loc)Object.assign(payload,loc);
+  let res=null;
+  try{res=await api('task_close',payload)}
+  catch(e){toast(e.message&&e.message.length>12?e.message:'Could not save — try again');return}
+  toast('Task closed ✓ '+(sent.includes('Email')?'Report emailed · ':'Report saved · ')+(res&&res.followUp?'Follow-up task created for '+payload.next:''));
   try{
-   await api('task_close',payload);
-   toast(sent.length?`Task closed ✓ Report ${sent.includes('Email')?'emailed':''}${sent.length>1?' + WhatsApp':sent.includes('WhatsApp')?'WhatsApp':''}`.trim():'Task closed ✓ Report saved');
    if(sent.includes('WhatsApp')&&curTask.phone){
     const txt=encodeURIComponent(`*<?= $CN ?> — Visit Summary*\nRep: ${ME.name}\nMet: ${payload.met}\nProducts: ${payload.products.join(', ')||'—'}\nDemo: ${payload.demo} · Samples: ${payload.samples}\nRemarks: ${remarks}${payload.next?'\nNext visit: '+payload.next:''}`);
-    window.open('https://wa.me/'+curTask.phone.replace(/[^0-9]/g,'')+'?text='+txt,'_blank');
+    const wa='https://wa.me/'+curTask.phone.replace(/[^0-9]/g,'')+'?text='+txt;
+    if(/; wv\)/.test(navigator.userAgent)||/HamaraStaffApp/.test(navigator.userAgent))location.href=wa;
+    else window.open(wa,'_blank');
    }
-   await refresh();history.back();
-  }catch(e){toast(e.message&&e.message.length>12?e.message:'Could not save — try again')}
+  }catch(e){}
+  try{await refresh();history.back()}catch(e){}
  };
  if($('vfLocSw').classList.contains('on'))getLocation(finish);else finish(null);
 }

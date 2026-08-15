@@ -3,8 +3,8 @@ require __DIR__ . '/../boot.php';
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
-function out($data){ echo json_encode(['ok'=>true,'data'=>$data]); exit; }
-function fail($err,$code=400){ http_response_code($code); echo json_encode(['ok'=>false,'error'=>$err]); exit; }
+function out($data){ while(ob_get_level())ob_end_clean(); echo json_encode(['ok'=>true,'data'=>$data]); exit; }
+function fail($err,$code=400){ while(ob_get_level())ob_end_clean(); http_response_code($code); echo json_encode(['ok'=>false,'error'=>$err]); exit; }
 function fmt($dt){ return $dt ? date('h:i a', strtotime($dt)) : null; }
 function initials($name){ $p=preg_split('/\s+/',trim($name)); $i=''; foreach(array_slice($p,0,2) as $w) $i.=strtoupper(substr($w,0,1)); return $i?:'?'; }
 function audit($actor,$action,$details=''){ try{ db()->prepare("INSERT INTO hs_audit_log (actor,action,details) VALUES (?,?,?)")->execute([$actor,$action,$details]); }catch(Exception $e){} }
@@ -225,20 +225,32 @@ case 'task_close': {
        $in['outcome']??'',$in['remarks']??'', ($in['next']??'')?:null, !empty($in['lat'])?1:0, $sent]);
   audit($_SESSION['emp_name'],'task_close',$t['doctor'].' — '.($in['outcome']??''));
   push_to_admins('📝 '.$_SESSION['emp_name'].' closed visit: '.$t['doctor'], 'Outcome: '.substr($in['outcome']??'',0,60));
-  /* backend email to client (Hostinger mail) */
-  if(in_array('Email',$in['sent']??[]) && filter_var($t['client_email'],FILTER_VALIDATE_EMAIL)){
-    $body="Dear {$t['doctor']},\n\nThank you for your time today. Summary of our visit:\n\n"
-      ."Representative: {$_SESSION['emp_name']} (".COMPANY_NAME.")\n"
-      ."Purpose: {$t['purpose']}\nPerson met: ".($in['met']??'')."\n"
-      ."Products discussed: ".implode(', ',$in['products']??[])."\n"
-      ."Demo given: ".($in['demo']??'No')."\nSamples: ".(int)($in['samples']??0)."\n"
-      ."Remarks: ".($in['remarks']??'')."\n"
-      .(!empty($in['next'])?"Next visit: {$in['next']}\n":'')
-      ."\nRegards,\n".COMPANY_NAME." Field Team";
-    @mail($t['client_email'],'Visit Summary — '.COMPANY_NAME,$body,
-      "From: noreply@hamarastaff.com\r\nReply-To: noreply@hamarastaff.com");
+  /* auto follow-up task when a next-visit date is given (visit stays in pipeline) */
+  $followUp=false;
+  if(!empty($in['next'])){
+    $db->prepare("INSERT INTO hs_tasks (emp_id,doctor,hospital,area,purpose,planned_time,client_email,client_phone,created_by) VALUES (?,?,?,?,?,?,?,?,?)")
+       ->execute([$eid,$t['doctor'],$t['hospital'],$t['area'],'Follow-up · '.$t['purpose'],$in['next'],$t['client_email'],$t['client_phone'],'Follow-up']);
+    $followUp=true;
+    audit($_SESSION['emp_name'],'task_create','Follow-up: '.$t['doctor'].' on '.$in['next']);
   }
-  out(true);
+  /* branded visit summary email via SMTP */
+  if(in_array('Email',$in['sent']??[]) && filter_var($t['client_email'],FILTER_VALIDATE_EMAIL)){
+    require_once dirname(__DIR__,2).'/api/mailer.php';
+    $body="<p>Dear ".htmlspecialchars($t['doctor']).",</p>"
+      ."<p>Thank you for your time today. Here is a summary of our visit:</p>"
+      ."<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='background:#F0F7F6;border-radius:14px'><tr><td style='padding:18px 20px;font-family:Arial,sans-serif;font-size:14px;line-height:2'>"
+      ."<b>Representative:</b> ".htmlspecialchars($_SESSION['emp_name'])." (".htmlspecialchars(COMPANY_NAME).")<br>"
+      ."<b>Purpose:</b> ".htmlspecialchars($t['purpose'])."<br>"
+      ."<b>Person met:</b> ".htmlspecialchars($in['met']??'')."<br>"
+      ."<b>Products discussed:</b> ".htmlspecialchars(implode(', ',$in['products']??[]) ?: '—')."<br>"
+      ."<b>Demo given:</b> ".htmlspecialchars($in['demo']??'No')." &middot; <b>Samples:</b> ".(int)($in['samples']??0)."<br>"
+      ."<b>Remarks:</b> ".nl2br(htmlspecialchars($in['remarks']??''))
+      .(!empty($in['next'])?"<br><b>Next visit:</b> ".htmlspecialchars($in['next']):'')
+      ."</td></tr></table>"
+      ."<p>Regards,<br><b>".htmlspecialchars(COMPANY_NAME)."</b> Field Team</p>";
+    @hs_send_mail($t['client_email'],'Visit Summary — '.COMPANY_NAME,$body);
+  }
+  out(['followUp'=>$followUp]);
 }
 
 /* ---------- ADMIN ---------- */
