@@ -89,10 +89,25 @@ async function doLogin(){
    if(j.error&&j.error.length>30)return fail(j.error);
    return fail('Invalid username or password');
   }
+  try{var b=location.pathname.replace(/\/+$/,'')+'/';localStorage.setItem('hs_last', b+(role==='admin'?'admin.html':'app.html'))}catch(e){}
   location.replace(role==='admin' ? 'admin.html' : 'app.html');
  }catch(e){fail('Server error \u2014 please try again')}
 }
 document.getElementById('p').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+/* already signed in? go straight to the right screen */
+(async function(){
+ try{
+  const r=await fetch('api/api.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'me'})});
+  const j=await r.json();
+  if(j.ok&&j.data&&j.data.role){
+   var b=location.pathname.replace(/\/+$/,'')+'/';
+   var t=b+(j.data.role==='admin'?'admin.html':'app.html');
+   try{localStorage.setItem('hs_last',t)}catch(e){}
+   location.replace(t);
+  }
+ }catch(e){}
+})();
 </script>
 </body>
 </html>

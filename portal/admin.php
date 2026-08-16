@@ -194,7 +194,7 @@ tbody tr.click:hover{background:var(--teal-soft)}
   <div class="brand">
     <div class="b-ic"><?php if (client_logo_exists()): ?><img src="<?= CLIENT_LOGO_URL ?>?v=<?= filemtime(CLIENT_LOGO_FILE) ?>" alt="" style="width:34px;height:34px;object-fit:contain"><?php else: ?>🏥<?php endif; ?></div>
     <div style="flex:1;min-width:0"><b><?= $CN ?></b><span>Management Panel</span></div>
-    <button class="hdr-logout" onclick="fetch('api/api.php',{method:'POST',body:JSON.stringify({action:'logout'})}).finally(()=>location.href='./')" title="Logout">
+    <button class="hdr-logout" onclick="(function(){try{localStorage.removeItem('hs_last')}catch(e){}return fetch('api/api.php',{method:'POST',body:JSON.stringify({action:'logout'})})})().finally(()=>location.href='./')" title="Logout">
       <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
     </button>
   </div>
@@ -209,7 +209,7 @@ tbody tr.click:hover{background:var(--teal-soft)}
   <div class="me">
     <div class="avatar">AD</div>
     <div style="flex:1"><b>Administrator</b><span><?= $CN ?></span></div>
-    <button onclick="fetch('api/api.php',{method:'POST',body:JSON.stringify({action:'logout'})}).finally(()=>location.href='./')" style="color:#fff;background:rgba(255,255,255,.15);padding:8px 12px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer">Logout</button>
+    <button onclick="(function(){try{localStorage.removeItem('hs_last')}catch(e){}return fetch('api/api.php',{method:'POST',body:JSON.stringify({action:'logout'})})})().finally(()=>location.href='./')" style="color:#fff;background:rgba(255,255,255,.15);padding:8px 12px;border-radius:10px;font-size:12px;font-weight:800;cursor:pointer">Logout</button>
   </div>
 </aside>
 
