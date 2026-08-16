@@ -559,9 +559,10 @@ function closeModal(){$('overlay').classList.remove('show')}
 
 /* ---------- Plan & Billing ---------- */
 function activeEmpCount(){return D?D.employees.filter(e=>e.active).length:0}
+function billableEmpCount(){return D?D.employees.length:0} /* ALL registered employees are billable — delete removes from billing, disable does not */
 const MIN_EMPS={150:10,250:20};
 function billedInfo(rate){
- const n=activeEmpCount(), min=MIN_EMPS[rate], bn=Math.max(n,min);
+ const n=billableEmpCount(), min=MIN_EMPS[rate], bn=Math.max(n,min);
  return {n,min,bn,amt:bn*rate};
 }
 function renderBilling(){
@@ -577,18 +578,18 @@ function renderBilling(){
      <div style="font-size:13px;opacity:.95;margin-top:3px">${d<0?'Your trial has ended':d===0?'Last day today!':d+' day'+(d>1?'s':'')+' left'} · Choose a plan below to continue without interruption</div></div>
    </div></div>`;
  }else if(HS_PLAN==='starter'){
-  const b1=billedInfo(150);
+  const b1=billedInfo(150); const nb=billableEmpCount();
   head=`<div class="card"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
    <div style="font-size:30px">📱</div>
    <div style="flex:1"><b style="font-size:16px">Current Plan: ₹150 Starter</b>
-   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app for field staff · ${n} active employee${n!==1?'s':''} · ₹${b1.amt}/month${n<b1.min?' (minimum billing: '+b1.min+' employees)':''}${HS_ENDS?` · <b style="color:${HS_SUB_DAYS<=7?'var(--red)':'var(--green)'}">Valid till ${HS_ENDS}${HS_SUB_DAYS>=0?' ('+HS_SUB_DAYS+'d left)':''}</b>`:''}</div></div>
+   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app for field staff · ${nb} registered employee${nb!==1?'s':''} · <b>₹${b1.amt}/month</b>${nb<b1.min?' (minimum billing: '+b1.min+' employees)':''}${HS_ENDS?` · <b style="color:${HS_SUB_DAYS<=7?'var(--red)':'var(--green)'}">Valid till ${HS_ENDS}${HS_SUB_DAYS>=0?' ('+HS_SUB_DAYS+'d left)':''}</b>`:''}</div></div>
    <span class="pill present">✓ Active</span>${HS_ENDS?`<button class="btn primary" style="padding:9px 14px;font-size:12.5px" onclick="openPay(150,'Starter')">Renew</button>`:''}</div></div>`;
  }else{
-  const b2=billedInfo(250);
+  const b2=billedInfo(250); const nb2=billableEmpCount();
   head=`<div class="card"><div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
    <div style="font-size:30px">🖥️</div>
    <div style="flex:1"><b style="font-size:16px">Current Plan: ₹250 Professional</b>
-   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app + Desktop panel · ${n} active employee${n!==1?'s':''} · ₹${b2.amt}/month${n<b2.min?' (minimum billing: '+b2.min+' employees)':''}${HS_ENDS?` · <b style="color:${HS_SUB_DAYS<=7?'var(--red)':'var(--green)'}">Valid till ${HS_ENDS}${HS_SUB_DAYS>=0?' ('+HS_SUB_DAYS+'d left)':''}</b>`:''}</div></div>
+   <div class="muted" style="font-size:13px;margin-top:3px">Mobile app + Desktop panel · ${nb2} registered employee${nb2!==1?'s':''} · <b>₹${b2.amt}/month</b>${nb2<b2.min?' (minimum billing: '+b2.min+' employees)':''}${HS_ENDS?` · <b style="color:${HS_SUB_DAYS<=7?'var(--red)':'var(--green)'}">Valid till ${HS_ENDS}${HS_SUB_DAYS>=0?' ('+HS_SUB_DAYS+'d left)':''}</b>`:''}</div></div>
    <span class="pill present">✓ Active</span>${HS_ENDS?`<button class="btn primary" style="padding:9px 14px;font-size:12.5px" onclick="openPay(250,'Professional')">Renew</button>`:''}</div></div>`;
  }
  el.innerHTML=head;
@@ -621,7 +622,8 @@ function openPay(rate,title){
  const upiLink='upi://pay?pa='+encodeURIComponent(HS_UPI)+'&pn='+encodeURIComponent(HS_PAYEE)+'&am='+amt+'&cu=INR&tn='+encodeURIComponent(tn);
  $('modalBody').innerHTML=`
   <b style="font-size:18px">Pay for ${title} Plan</b>
-  <div class="muted" style="font-size:13px;margin-top:4px">${n<min?n+' active employee'+(n!==1?'s':'')+' — billed at the minimum of '+min:bn+' employee'+(bn!==1?'s':'')} × ₹${rate} = <b style="color:var(--teal);font-size:15px">₹${amt}/month</b></div>
+  <div class="muted" style="font-size:13px;margin-top:4px">${n<min?n+' registered employee'+(n!==1?'s':'')+' — billed at the minimum of '+min:bn+' registered employee'+(bn!==1?'s':'')} × ₹${rate} = <b style="color:var(--teal);font-size:15px">₹${amt}/month</b></div>
+  <div class="muted" style="font-size:11.5px;margin-top:4px">Renewal amount is calculated from employees registered at the time of renewal.</div>
   <div style="display:flex;flex-direction:column;align-items:center;background:var(--bg);border-radius:16px;padding:20px;margin-top:16px">
    <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.5px;margin-bottom:10px">SCAN WITH ANY UPI APP</div>
    <div id="upiQr" style="background:#fff;padding:12px;border-radius:14px"></div>

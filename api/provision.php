@@ -113,7 +113,16 @@ function clientList($CLIENTS){
     $email=null;
     if(preg_match("/define\('TRIAL_EMAIL',\s*'((?:[^'\\\\]|\\\\.)*)'\)/",$cfg,$em)) $email=stripslashes($em[1]);
     $phone=pv($cfg,'TRIAL_PHONE'); $loc=trim(pv($cfg,'TRIAL_CITY').(pv($cfg,'TRIAL_STATE')?', '.pv($cfg,'TRIAL_STATE'):''),', ');
-    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'ends'=>$ends,'email'=>$email,'phone'=>$phone,'loc'=>$loc,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
+    $emps=null; $monthly=null;
+    if($plan!=='trial'){
+      try{
+        $pdo=new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8mb4',DB_USER,DB_PASS,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+        $emps=(int)$pdo->query("SELECT COUNT(*) FROM `{$code}_employees`")->fetchColumn();
+        $rate=$plan==='starter'?150:250; $minn=$plan==='starter'?10:20;
+        $monthly=max($emps,$minn)*$rate;
+      }catch(Exception $e){}
+    }
+    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'ends'=>$ends,'email'=>$email,'phone'=>$phone,'loc'=>$loc,'emps'=>$emps,'monthly'=>$monthly,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
   }
   return $list;
 }
