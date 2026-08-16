@@ -67,8 +67,10 @@ function trial_lock_page($cn) {
     .'<h2 style="margin:14px 0 8px;color:#13211F">Your free trial has ended</h2>'
     .'<p style="color:#5B6E6B;line-height:1.65;font-size:14.5px">The 7-day free trial for <b>'.$cn.'</b> is over. Your data is safe &mdash; choose a plan to continue exactly where you left off.</p>'
     .'<p style="color:#5B6E6B;font-size:14px;line-height:1.7"><b>&#8377;150</b>/employee/month &mdash; Mobile app<br><b>&#8377;250</b>/employee/month &mdash; Mobile + Desktop panel</p>'
-    .'<a href="mailto:info@hamarastaff.com?subject=Activate my HamaraStaff account" style="display:inline-block;margin:10px 6px 0;background:#0E6B63;color:#fff;padding:13px 22px;border-radius:12px;text-decoration:none;font-weight:700">&#9993; Email Us to Activate</a>'
-    .'<a href="https://hamarastaff.com/pricing.html" style="display:inline-block;margin:10px 6px 0;background:#fff;border:1.5px solid #E2EAE8;color:#13211F;padding:13px 22px;border-radius:12px;text-decoration:none;font-weight:700">View Plans</a>'
+    .'<a href="upi://pay?pa=allpayments8985%40ybl&pn=HAMARA%20STAFF&am=1500&cu=INR&tn=HamaraStaff%20'.strtoupper(CODE).'%20Starter" style="display:block;margin:16px auto 0;max-width:320px;background:#0E6B63;color:#fff;padding:14px 22px;border-radius:12px;text-decoration:none;font-weight:800">&#128241; Pay &#8377;1,500 &mdash; Starter Plan (UPI)</a>'
+    .'<a href="upi://pay?pa=allpayments8985%40ybl&pn=HAMARA%20STAFF&am=5000&cu=INR&tn=HamaraStaff%20'.strtoupper(CODE).'%20Professional" style="display:block;margin:10px auto 0;max-width:320px;background:#12857B;color:#fff;padding:14px 22px;border-radius:12px;text-decoration:none;font-weight:800">&#128241; Pay &#8377;5,000 &mdash; Professional Plan (UPI)</a>'
+    .'<div style="font-size:12.5px;color:#5B6E6B;margin-top:12px">UPI ID: <b style="font-family:monospace">allpayments8985@ybl</b> (HAMARA STAFF)<br>After paying, WhatsApp the screenshot with code <b>'.strtoupper(CODE).'</b> to <b>+91 93462 20090</b> &mdash; activated the same day.</div>'
+    .'<a href="mailto:info@hamarastaff.com?subject=Activate my HamaraStaff account ('.strtoupper(CODE).')" style="display:inline-block;margin:14px 6px 0;background:#fff;border:1.5px solid #E2EAE8;color:#13211F;padding:12px 20px;border-radius:12px;text-decoration:none;font-weight:700">&#9993; Email Us</a>'
     .'</div></body></html>';
   exit;
 }

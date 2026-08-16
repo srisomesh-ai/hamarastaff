@@ -5,6 +5,24 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 function out($d){ echo json_encode(['ok'=>true,'data'=>$d]); exit; }
 function fail($e,$c=400){ http_response_code($c); echo json_encode(['ok'=>false,'error'=>$e]); exit; }
+function pv($cfg,$name){ return preg_match("/define\('$name',\s*'((?:[^'\\\\]|\\\\.)*)'\)/",$cfg,$m) ? stripslashes($m[1]) : ''; }
+function notifyPlanEmail($cfg,$code,$plan,$ends,$kind){
+  $email = pv($cfg,'TRIAL_EMAIL'); if(!filter_var($email,FILTER_VALIDATE_EMAIL)) return;
+  $name = pv($cfg,'COMPANY_NAME') ?: strtoupper($code);
+  $planName = $plan==='starter' ? '₹150 Starter' : '₹250 Professional';
+  $endsNice = $ends ? date('d M Y', strtotime($ends)) : '';
+  $inner = "<p>Hi ".htmlspecialchars($name)." team,</p>"
+    . ($kind==='extend'
+       ? "<p>&#9989; Your HamaraStaff plan has been <b>renewed</b>. Thank you for the payment!</p>"
+       : "<p>&#127881; Your HamaraStaff account is now <b>activated</b> on the <b>$planName</b> plan. Welcome aboard!</p>")
+    . "<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='background:#F0F7F6;border-radius:14px'><tr><td style='padding:18px 20px;font-family:Arial,sans-serif;font-size:14px;line-height:2'>"
+    . "<b>Portal:</b> <a href='https://hamarastaff.com/$code/' style='color:#0E6B63;font-weight:700'>hamarastaff.com/$code/</a><br>"
+    . "<b>Plan:</b> $planName<br>"
+    . ($endsNice ? "<b>Valid till:</b> $endsNice<br>" : "")
+    . "</td></tr></table>"
+    . "<p>You can see your plan and validity anytime in <b>Plan &amp; Billing</b> inside the management panel. Need anything? Just reply to this email.</p>";
+  @hs_send_mail($email, ($kind==='extend' ? "Plan renewed till $endsNice — " : "Account activated — ") . $name, $inner, "Open My Portal", "https://hamarastaff.com/$code/");
+}
 function requireSuper(){ if(($_SESSION['hs_super']??false)!==true) fail('auth',401); }
 
 $ROOT = dirname(__DIR__);
@@ -94,7 +112,8 @@ function clientList($CLIENTS){
     }
     $email=null;
     if(preg_match("/define\('TRIAL_EMAIL',\s*'((?:[^'\\\\]|\\\\.)*)'\)/",$cfg,$em)) $email=stripslashes($em[1]);
-    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'ends'=>$ends,'email'=>$email,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
+    $phone=pv($cfg,'TRIAL_PHONE'); $loc=trim(pv($cfg,'TRIAL_CITY').(pv($cfg,'TRIAL_STATE')?', '.pv($cfg,'TRIAL_STATE'):''),', ');
+    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'ends'=>$ends,'email'=>$email,'phone'=>$phone,'loc'=>$loc,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
   }
   return $list;
 }
@@ -172,6 +191,7 @@ case 'set_plan': {
     else $cfg.="define('PLAN_ENDS', '".$ends."');\n";
   }
   file_put_contents($f,$cfg);
+  notifyPlanEmail($cfg,$code,$plan,$ends,'activate');
   out(['plan'=>$plan,'ends'=>$ends]);
 }
 
@@ -188,7 +208,34 @@ case 'extend': {
   if(preg_match("/define\('PLAN_ENDS',/",$cfg)) $cfg=preg_replace("/define\('PLAN_ENDS',\s*'[0-9-]*'\);/","define('PLAN_ENDS', '".$ends."');",$cfg);
   else $cfg.="define('PLAN_ENDS', '".$ends."');\n";
   file_put_contents($f,$cfg);
+  $curPlan = pv($cfg,'PLAN') ?: 'professional';
+  notifyPlanEmail($cfg,$code,$curPlan,$ends,'extend');
   out(['ends'=>$ends]);
+}
+
+case 'set_admin_pass': {
+  requireSuper();
+  $code=strtolower(trim($in['code']??''));
+  $f="$CLIENTS/$code.php";
+  if(!file_exists($f)) fail('Client not found',404);
+  $pass=trim($in['pass']??'');
+  if($pass==='') $pass='HS'.substr(str_shuffle('23456789abcdefghjkmnpqrstuvwxyz'),0,6).'@'.rand(10,99);
+  if(strlen($pass)<6) fail('Password must be at least 6 characters');
+  $cfg=file_get_contents($f);
+  $cfg=preg_replace("/define\('ADMIN_PASS',\s*'(?:[^'\\\\]|\\\\.)*'\);/","define('ADMIN_PASS', '".addslashes($pass)."');",$cfg,1);
+  file_put_contents($f,$cfg);
+  /* email the client their new password */
+  $email=pv($cfg,'TRIAL_EMAIL'); $name=pv($cfg,'COMPANY_NAME')?:strtoupper($code);
+  if(filter_var($email,FILTER_VALIDATE_EMAIL)){
+    @hs_send_mail($email,"Your HamaraStaff admin password was reset — $name",
+      "<p>Hi ".htmlspecialchars($name)." team,</p><p>Your management panel password has been reset by HamaraStaff support.</p>"
+      ."<table role='presentation' width='100%' cellpadding='0' cellspacing='0' style='background:#F0F7F6;border-radius:14px'><tr><td style='padding:18px 20px;font-family:Arial,sans-serif;font-size:14px;line-height:2'>"
+      ."<b>Portal:</b> <a href='https://hamarastaff.com/$code/' style='color:#0E6B63;font-weight:700'>hamarastaff.com/$code/</a><br>"
+      ."<b>Username:</b> admin<br><b>New password:</b> <b style='font-family:monospace'>".htmlspecialchars($pass)."</b>"
+      ."</td></tr></table><p>If you did not request this, reply to this email immediately.</p>",
+      "Open Management Panel","https://hamarastaff.com/$code/admin.html");
+  }
+  out(['pass'=>$pass,'emailed'=>filter_var($email,FILTER_VALIDATE_EMAIL)?true:false]);
 }
 
 case 'set_logo': {

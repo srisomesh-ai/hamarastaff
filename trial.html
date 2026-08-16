@@ -92,8 +92,17 @@ input:focus{outline:2px solid var(--teal);border-color:var(--teal)}
    <div class="urlprev" id="urlprev">hamarastaff.com/<b>—</b></div>
    <label>Your Email (login details will be sent here)</label>
    <input id="email" type="email" placeholder="you@company.com">
-   <label>Mobile Number (optional)</label>
-   <input id="phone" type="tel" placeholder="+91 9XXXXXXXXX">
+   <label>Mobile Number</label>
+   <input id="phone" type="tel" placeholder="9XXXXXXXXX" maxlength="13">
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div><label>State</label>
+    <select id="state" style="width:100%;padding:14px 12px;border:1.5px solid var(--line);border-radius:12px;font-family:inherit;font-size:14.5px;background:#fff">
+     <option value="">Select state</option>
+     <option>Andhra Pradesh</option><option>Arunachal Pradesh</option><option>Assam</option><option>Bihar</option><option>Chhattisgarh</option><option>Delhi</option><option>Goa</option><option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option><option>Jammu &amp; Kashmir</option><option>Jharkhand</option><option>Karnataka</option><option>Kerala</option><option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option><option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option><option>Odisha</option><option>Puducherry</option><option>Punjab</option><option>Rajasthan</option><option>Sikkim</option><option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option><option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option><option>Other</option>
+    </select></div>
+    <div><label>City</label>
+    <input id="city" placeholder="e.g. Visakhapatnam"></div>
+   </div>
    <input class="hp" id="website" tabindex="-1" autocomplete="off">
    <div class="err" id="err"></div>
    <button class="btn" id="goBtn" onclick="signup()">Start My Free Trial →</button>
@@ -133,7 +142,7 @@ async function signup(){
  err.style.display='none';btn.disabled=true;btn.textContent='Setting up your portal…';
  try{
   const r=await fetch('api/trial.php',{method:'POST',headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({action:'signup',company:$('company').value,code:$('code').value.toLowerCase(),email:$('email').value,phone:$('phone').value,website:$('website').value})});
+   body:JSON.stringify({action:'signup',company:$('company').value,code:$('code').value.toLowerCase(),email:$('email').value,phone:$('phone').value,state:$('state').value,city:$('city').value,website:$('website').value})});
   const j=await r.json();
   if(!j.ok)throw new Error(j.error||'Something went wrong — please try again');
   const d=j.data;

@@ -20,17 +20,32 @@ $name  = trim($in['company'] ?? '');
 $code  = strtolower(trim($in['code'] ?? ''));
 $email = strtolower(trim($in['email'] ?? ''));
 $phone = trim($in['phone'] ?? '');
+$phoneDigits = preg_replace('/\D/', '', $phone);
+if (strlen($phoneDigits) === 12 && substr($phoneDigits, 0, 2) === '91') $phoneDigits = substr($phoneDigits, 2);
+$state = trim($in['state'] ?? '');
+$city  = trim($in['city'] ?? '');
 
 if (strlen($name) < 3) fail('Please enter your company / institute name');
 if (!preg_match('/^[a-z0-9][a-z0-9-]{1,19}$/', $code)) fail('Portal code must be 2–20 letters or numbers');
 if (in_array($code, ['api','portal','clients','assets','admin','login','pricing','index','trial','www','mail'])) fail('That portal code is reserved — please choose another');
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) fail('Please enter a valid email address — your login details will be sent there');
+if (strlen($phoneDigits) !== 10) fail('Please enter a valid 10-digit mobile number');
+if ($state === '') fail('Please select your state');
+if (strlen($city) < 2) fail('Please enter your city');
 if (file_exists("$CLIENTS/$code.php")) fail('That portal code is already taken — please choose another');
 
-/* one trial per email */
+/* one account per email AND per mobile number */
 foreach (glob("$CLIENTS/*.php") as $f) {
-  if (strpos(file_get_contents($f), "TRIAL_EMAIL', '" . addslashes($email)) !== false) {
-    fail('A trial already exists for this email. Contact info@hamarastaff.com if you need help.');
+  $cfgc = file_get_contents($f);
+  if (strpos($cfgc, "TRIAL_EMAIL', '" . addslashes($email)) !== false) {
+    fail('An account already exists with this email. Contact info@hamarastaff.com if you need help.');
+  }
+  if (preg_match("/define\('TRIAL_PHONE',\s*'([^']*)'\)/", $cfgc, $pm)) {
+    $pd = preg_replace('/\D/', '', $pm[1]);
+    if (strlen($pd) === 12 && substr($pd, 0, 2) === '91') $pd = substr($pd, 2);
+    if ($pd !== '' && $pd === $phoneDigits) {
+      fail('An account already exists with this mobile number. Contact info@hamarastaff.com if you need help.');
+    }
   }
 }
 
@@ -71,7 +86,9 @@ $cfg = "<?php\n"
   . "define('PLAN', 'trial');\n"
   . "define('TRIAL_ENDS', '$ends');\n"
   . "define('TRIAL_EMAIL', '" . addslashes($email) . "');\n"
-  . "define('TRIAL_PHONE', '" . addslashes($phone) . "');\n"
+  . "define('TRIAL_PHONE', '" . addslashes($phoneDigits) . "');\n"
+  . "define('TRIAL_STATE', '" . addslashes($state) . "');\n"
+  . "define('TRIAL_CITY', '" . addslashes($city) . "');\n"
   . "define('DRIP_STAGE', 1);\n";
 file_put_contents("$CLIENTS/$code.php", $cfg);
 
@@ -84,7 +101,7 @@ $endsNice = date('d M Y', strtotime($ends));
 $mailed = hs_send_mail($email, $wSub, $wBody, $wCta, $wUrl);
 
 /* notify the owner — full customer details for follow-up */
-[$lSub, $lBody, $lCta, $lUrl] = hs_lead_email($name, $code, $email, $phone, $endsNice);
+[$lSub, $lBody, $lCta, $lUrl] = hs_lead_email($name, $code, $email, $phoneDigits, $endsNice, $city . ', ' . $state);
 foreach (['someswararao.pyle@gmail.com', 'info@hamarastaff.com'] as $ownerTo) {
   hs_send_mail($ownerTo, $lSub, $lBody, $lCta, $lUrl);
 }

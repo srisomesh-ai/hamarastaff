@@ -89,7 +89,7 @@ function hs_welcome_email($name, $code, $apass, $endsNice) {
   return ["Your HamaraStaff free trial is ready — $name", $inner, "Open My Portal", $portal];
 }
 
-function hs_lead_email($name, $code, $email, $phone, $endsNice) {
+function hs_lead_email($name, $code, $email, $phone, $endsNice, $location = '') {
   $CU = strtoupper($code);
   $portal = "https://hamarastaff.com/$code/";
   $inner = "<p><b>&#127881; New trial signup!</b></p>"
@@ -98,6 +98,7 @@ function hs_lead_email($name, $code, $email, $phone, $endsNice) {
     . "<b>Portal:</b> <a href='$portal' style='color:#0E6B63;font-weight:700'>hamarastaff.com/$code/</a><br>"
     . "<b>Email:</b> <a href='mailto:$email' style='color:#0E6B63'>$email</a><br>"
     . "<b>Phone:</b> " . ($phone !== '' ? "<a href='tel:$phone' style='color:#0E6B63'>" . htmlspecialchars($phone) . "</a> &middot; <a href='https://wa.me/" . preg_replace('/[^0-9]/', '', $phone) . "' style='color:#1E7B34;font-weight:700'>WhatsApp</a>" : "<i>not given</i>") . "<br>"
+    . ($location !== '' ? "<b>Location:</b> " . htmlspecialchars($location) . "<br>" : "")
     . "<b>Trial ends:</b> $endsNice<br>"
     . "<b>Signed up:</b> " . date('d M Y, h:i A') . " IST"
     . "</td></tr></table>"

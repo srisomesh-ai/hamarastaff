@@ -160,12 +160,13 @@ async function loadClients(){
     <div><div class="code">${c.code.toUpperCase()}</div><div class="nm" style="margin:0">${c.name}</div></div>
    </div>
    <span class="st ok">● Live</span> <span class="st" style="background:${c.plan==='trial'?(c.days<0?'#FBE9E7':'var(--amber-soft)'):c.plan==='starter'?'var(--amber-soft)':'var(--soft)'};color:${c.plan==='trial'?(c.days<0?'var(--red)':'var(--amber)'):c.plan==='starter'?'var(--amber)':'var(--teal)'}">${c.plan==='trial'?(c.days<0?'⏳ Trial EXPIRED':'🎁 Trial · '+(c.days===0?'last day':c.days+'d left')):(c.plan==='starter'?'₹150 Starter':'₹250 Professional')+(c.ends?(c.days<0?' · EXPIRED '+c.ends:' · till '+c.ends+' ('+c.days+'d)'):'')}</span>
-   ${c.email?`<div style="font-size:11.5px;color:var(--sub);font-weight:700;margin-top:6px">✉️ ${c.email}</div>`:''}
+   ${c.email?`<div style="font-size:11.5px;color:var(--sub);font-weight:700;margin-top:6px">✉️ ${c.email}${c.phone?` · 📞 <a href="tel:+91${c.phone}" style="color:var(--teal)">${c.phone}</a> · <a href="https://wa.me/91${c.phone}" target="_blank" style="color:var(--green)">WhatsApp</a>`:''}${c.loc?` · 📍 ${c.loc}`:''}</div>`:''}
    <div class="acts">
     <a class="btn ghost" href="/${c.code}/" target="_blank">Open Portal</a>
     <a class="btn ghost" href="/${c.code}/admin.html" target="_blank">Admin Panel</a>
     <button class="btn ghost" onclick="pickLogo('${c.code}')">${c.logo?'Change Logo':'Set Logo'}</button>
     <a class="btn ghost" style="text-decoration:none" href="api/provision.php?action=backup&code=${c.code}" download>⬇ Backup</a>
+    <button class="btn ghost" onclick="resetPass('${c.code}')">🔑 Reset Password</button>
     ${c.plan==='trial'?`<button class="btn primary" style="padding:9px 13px;font-size:12px;border-radius:10px" onclick="activate('${c.code}','professional')">Activate ₹250</button>
     <button class="btn ghost" onclick="activate('${c.code}','starter')">Activate ₹150</button>`
     :`<button class="btn primary" style="padding:9px 13px;font-size:12px;border-radius:10px" onclick="extendClient('${c.code}')">＋ Extend Validity</button>
@@ -271,6 +272,15 @@ async function extendClient(code){
  if(m===null)return;
  const months=parseInt(m)||1;
  try{const r=await api('extend',{code,months});toast(code.toUpperCase()+' extended ✓ now valid till '+r.ends);loadClients()}catch(e){toast(e.message)}
+}
+async function resetPass(code){
+ const p=prompt('Reset admin password for '+code.toUpperCase()+'.\n\nEnter a new password, or leave BLANK to auto-generate:');
+ if(p===null)return;
+ try{
+  const r=await api('set_admin_pass',{code,pass:p.trim()});
+  alert('New admin password for '+code.toUpperCase()+':\n\n'+r.pass+'\n\n'+(r.emailed?'✓ Also emailed to the client.':'⚠ Client has no email on file — share it with them yourself.'));
+  toast('Password reset ✓');
+ }catch(e){toast(e.message)}
 }
 function closeModal(){$('overlay').classList.remove('show')}
 boot();
