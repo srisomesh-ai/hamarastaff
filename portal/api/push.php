@@ -72,7 +72,13 @@ function push_send_to($rows, $title, $body) {
     $msg = ['message' => [
       'token' => $r['token'],
       'notification' => ['title' => $title, 'body' => $body],
-      'android' => ['priority' => 'HIGH', 'notification' => ['channel_id' => 'hamarastaff']]
+      'android' => ['priority' => 'HIGH', 'notification' => [
+        'channel_id' => 'hamarastaff',
+        'icon' => 'ic_stat_hs',
+        'color' => '#0E6B63',
+        'default_sound' => true,
+        'default_vibrate_timings' => true
+      ]]
     ]];
     $ch = curl_init($url);
     curl_setopt_array($ch, [CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8,

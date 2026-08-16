@@ -26,14 +26,20 @@ public class PushService extends FirebaseMessagingService {
         }
         NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            nm.createNotificationChannel(new NotificationChannel(CHANNEL_ID, "HamaraStaff", NotificationManager.IMPORTANCE_HIGH));
+            NotificationChannel ch = new NotificationChannel(CHANNEL_ID, "HamaraStaff", NotificationManager.IMPORTANCE_HIGH);
+            ch.enableVibration(true);
+            ch.setVibrationPattern(new long[]{0, 260, 140, 260});
+            ch.enableLights(true);
+            nm.createNotificationChannel(ch);
         }
         Intent open = new Intent(this, MainActivity.class);
         open.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pi = PendingIntent.getActivity(this, 0, open,
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification n = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.ic_stat_hs)
+                .setColor(0xFF0E6B63)
+                .setDefaults(NotificationCompat.DEFAULT_SOUND | NotificationCompat.DEFAULT_VIBRATE)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
