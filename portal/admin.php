@@ -23,7 +23,7 @@ if (PLAN === 'starter') {
 <title><?= $CN ?> — Management Panel</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script>const HS_PLAN='<?= PLAN ?>';const HS_TRIAL_DAYS=<?= (int)TRIAL_DAYS_LEFT ?>;const HS_CODE='<?= CODE ?>';const HS_ENDS='<?= PLAN_ENDS !== '' ? date('d M Y', strtotime(PLAN_ENDS)) : '' ?>';const HS_SUB_DAYS=<?= PLAN_ENDS !== '' ? (int)SUB_DAYS_LEFT : -1 ?>;const HS_UPI='srisomeshidfc@ybl';const HS_PAYEE='Hamara Staff';</script>
+<script>const HS_PLAN='<?= PLAN ?>';const HS_TRIAL_DAYS=<?= (int)TRIAL_DAYS_LEFT ?>;const HS_CODE='<?= CODE ?>';const HS_ENDS='<?= PLAN_ENDS !== '' ? date('d M Y', strtotime(PLAN_ENDS)) : '' ?>';const HS_SUB_DAYS=<?= PLAN_ENDS !== '' ? (int)SUB_DAYS_LEFT : -1 ?>;const HS_UPI='allpayments8985@ybl';const HS_PAYEE='HAMARA STAFF';</script>
 <link rel="icon" type="image/png" href="/assets/favicon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">

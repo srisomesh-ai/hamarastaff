@@ -100,7 +100,7 @@ td.r{text-align:right;font-family:'Space Grotesk';font-weight:600;white-space:no
         <li class="no">WhatsApp report sharing</li>
         <li class="no">HOD payroll approval workflow</li>
       </ul>
-      <div class="cta">Minimum ₹1,500/month (10 employees)</div>
+      <div class="cta" style="cursor:pointer" onclick="payUPI(1500,'Starter')">Pay ₹1,500 &amp; Start — UPI ▸</div>
     </div>
 
     <div class="plan reco">
@@ -121,7 +121,7 @@ td.r{text-align:right;font-family:'Space Grotesk';font-weight:600;white-space:no
         <li><b>Minimum billing ₹5,000/month (20 employees)</b></li>
         <li><b>+₹250 per additional employee above 20</b></li>
       </ul>
-      <div class="cta">Minimum ₹5,000/month (20 employees)</div>
+      <div class="cta" style="cursor:pointer" onclick="payUPI(5000,'Professional')">Pay ₹5,000 &amp; Start — UPI ▸</div>
       <div class="annual">💚 Pay annually — 2 months FREE (e.g. ₹50,000/year at 20 employees)</div>
     </div>
 
@@ -139,7 +139,11 @@ td.r{text-align:right;font-family:'Space Grotesk';font-weight:600;white-space:no
         <li>Custom reports & approval hierarchy</li>
         <li>Service agreement with uptime SLA</li>
       </ul>
-      <div class="cta">Let's discuss your scope</div>
+      <div class="cta" style="display:flex;gap:8px;justify-content:center;background:none;padding:0">
+ <a href="tel:+919346220090" style="flex:1;background:var(--teal);color:#fff;border-radius:11px;padding:12px 6px;text-decoration:none;font-weight:800;font-size:13px">📞 Call</a>
+ <a href="https://wa.me/919346220090?text=Hi%2C%20I%20want%20to%20discuss%20the%20Enterprise%20plan%20of%20HamaraStaff" target="_blank" style="flex:1;background:#1E7B34;color:#fff;border-radius:11px;padding:12px 6px;text-decoration:none;font-weight:800;font-size:13px">💬 WhatsApp</a>
+ <a href="mailto:info@hamarastaff.com?subject=Enterprise plan discussion" style="flex:1;background:var(--teal-soft);color:var(--teal);border-radius:11px;padding:12px 6px;text-decoration:none;font-weight:800;font-size:13px">✉️ Email</a>
+</div>
     </div>
   </div>
 
@@ -180,5 +184,30 @@ td.r{text-align:right;font-family:'Space Grotesk';font-weight:600;white-space:no
     📞 Contact: Someswara · +91 93462 20090 · ✉️ info@hamarastaff.com · 🌐 hamarastaff.com
   </div>
 </div>
+
+<div id="payOverlay" style="display:none;position:fixed;inset:0;background:rgba(10,25,23,.55);z-index:99;align-items:center;justify-content:center;padding:18px" onclick="if(event.target===this)this.style.display='none'">
+ <div style="background:#fff;border-radius:20px;padding:26px;max-width:360px;width:100%;text-align:center;font-family:'Manrope',sans-serif">
+  <b id="payTitle" style="font-size:17px"></b>
+  <div style="font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.5px;margin:14px 0 10px">SCAN WITH ANY UPI APP</div>
+  <div id="payQr" style="display:flex;justify-content:center;background:#F6FAF9;border-radius:14px;padding:14px"></div>
+  <div style="margin-top:12px;font-size:14.5px;font-weight:800">Paying to: <span style="color:var(--teal)">HAMARA STAFF</span></div>
+  <div style="font-size:13px;color:var(--sub);margin-top:2px;font-family:monospace">allpayments8985@ybl
+   <button onclick="navigator.clipboard&&navigator.clipboard.writeText('allpayments8985@ybl').then(()=>this.textContent='Copied ✓')" style="cursor:pointer;font-size:11.5px;background:var(--teal-soft);color:var(--teal);border:none;border-radius:8px;padding:4px 9px;font-weight:800;margin-left:6px;font-family:'Manrope'">Copy</button>
+  </div>
+  <a id="payLink" href="#" style="display:block;margin-top:14px;background:var(--teal);color:#fff;padding:14px;border-radius:13px;text-decoration:none;font-weight:800;font-size:14.5px">📲 Pay via UPI App</a>
+  <p style="font-size:12px;color:var(--sub);line-height:1.6;margin-top:12px">After payment, send the screenshot with your company name to <b>info@hamarastaff.com</b> or WhatsApp <b>+91 93462 20090</b> — your portal is activated the same day.</p>
+ </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+function payUPI(amt,plan){
+ var link='upi://pay?pa=allpayments8985%40ybl&pn=HAMARA%20STAFF&am='+amt+'&cu=INR&tn='+encodeURIComponent('HamaraStaff '+plan+' plan');
+ document.getElementById('payTitle').textContent=plan+' Plan — ₹'+amt.toLocaleString('en-IN')+'/month';
+ document.getElementById('payLink').href=link;
+ var q=document.getElementById('payQr');q.innerHTML='';
+ try{new QRCode(q,{text:link,width:180,height:180})}catch(e){q.textContent='Use the UPI ID above'}
+ document.getElementById('payOverlay').style.display='flex';
+}
+</script>
 </body>
 </html>

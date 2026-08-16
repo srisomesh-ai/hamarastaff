@@ -85,7 +85,7 @@ function drip_email($stage, $name, $CODE, $code, $ends) {
     "Your trial ended — but your data is 100% safe, $name",
     "<p>Hi $name team,</p>
      <p>Your portal is <b>paused, not deleted</b>. Every employee, attendance record and visit report is waiting exactly as you left it.</p>
-     <p>Reactivate anytime: pay via UPI to <b>Hamara Staff</b> (<b>srisomeshidfc@ybl</b>), send the screenshot with code <b>$CODE</b> to this email, and you're live again the same day.</p>",
+     <p>Reactivate anytime: pay via UPI to <b>Hamara Staff</b> (<b>allpayments8985@ybl</b>), send the screenshot with code <b>$CODE</b> to this email, and you're live again the same day.</p>",
     "View Plans", "https://hamarastaff.com/pricing.html"];
   case 8: return [
     "Is price the concern? Start with just \u{20B9}1,500/month",

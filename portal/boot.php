@@ -53,7 +53,7 @@ function sub_lock_page($cn) {
     .'<div style="font-size:44px">&#128179;</div>'
     .'<h2 style="margin:14px 0 8px;color:#13211F">Your plan has expired</h2>'
     .'<p style="color:#5B6E6B;line-height:1.65;font-size:14.5px">The subscription for <b>'.$cn.'</b> ended on <b>'.date('d M Y', strtotime(PLAN_ENDS)).'</b>. Your data is completely safe &mdash; renew to continue exactly where you left off.</p>'
-    .'<div style="background:#F4F8F7;border-radius:14px;padding:16px;margin-top:14px;font-size:13.5px;color:#13211F;line-height:1.8">Pay via UPI to <b>Hamara Staff</b><br><span style="font-family:monospace;font-weight:700">srisomeshidfc@ybl</span><br><span style="color:#5B6E6B;font-size:12.5px">Then send the screenshot with your portal code to info@hamarastaff.com &mdash; renewed the same day.</span></div>'
+    .'<div style="background:#F4F8F7;border-radius:14px;padding:16px;margin-top:14px;font-size:13.5px;color:#13211F;line-height:1.8">Pay via UPI to <b>Hamara Staff</b><br><span style="font-family:monospace;font-weight:700">allpayments8985@ybl</span><br><span style="color:#5B6E6B;font-size:12.5px">Then send the screenshot with your portal code to info@hamarastaff.com &mdash; renewed the same day.</span></div>'
     .'<a href="mailto:info@hamarastaff.com?subject=Renew my HamaraStaff plan ('.strtoupper(CODE).')" style="display:inline-block;margin:16px 6px 0;background:#0E6B63;color:#fff;padding:13px 22px;border-radius:12px;text-decoration:none;font-weight:700">&#9993; Email Payment Proof</a>'
     .'</div></body></html>';
   exit;
