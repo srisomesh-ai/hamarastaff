@@ -28,6 +28,10 @@ try {
   echo "Error              : " . $e->getMessage() . "\n";
   echo "→ Check DB name/user/password, and that the DB user is added to the database in hPanel.\n";
 }
+$__sess_dir = dirname(__DIR__, 2) . '/api/sessions';
+if (is_dir($__sess_dir)) ini_set('session.save_path', $__sess_dir);
+ini_set('session.gc_maxlifetime', 60 * 60 * 24 * 30);
+session_set_cookie_params(['lifetime' => 60 * 60 * 24 * 30, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
 session_start();
 $_SESSION['hc'] = 1;
 echo "PHP sessions       : " . (session_id() ? "working ✓" : "FAILED ✗") . "\n";

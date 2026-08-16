@@ -2,7 +2,17 @@
 require __DIR__ . '/../boot.php';
 require __DIR__ . '/push.php';
 ob_start();
+/* long-lived sessions: field staff stay logged in for 30 days */
+$__sess_dir = dirname(__DIR__, 2) . '/api/sessions';
+if (!is_dir($__sess_dir)) @mkdir($__sess_dir, 0700, true);
+if (is_dir($__sess_dir)) ini_set('session.save_path', $__sess_dir);
+ini_set('session.gc_maxlifetime', 60 * 60 * 24 * 30);
+session_set_cookie_params(['lifetime' => 60 * 60 * 24 * 30, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
 session_start();
+/* sliding renewal: refresh the cookie so active users never expire */
+if (!empty($_SESSION['tenant'])) {
+  setcookie(session_name(), session_id(), ['expires' => time() + 60 * 60 * 24 * 30, 'path' => '/', 'secure' => true, 'httponly' => true, 'samesite' => 'Lax']);
+}
 header('Content-Type: application/json; charset=utf-8');
 
 $HS_AFTER = [];

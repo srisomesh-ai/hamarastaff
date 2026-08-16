@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -85,6 +86,10 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 progress.setVisibility(View.GONE);
                 swipe.setRefreshing(false);
+                if (url != null && url.contains(APP_HOST)) {
+                    getSharedPreferences("hs", MODE_PRIVATE).edit().putString("last_url", url).apply();
+                    CookieManager.getInstance().flush();
+                }
             }
         });
 
@@ -113,7 +118,8 @@ public class MainActivity extends AppCompatActivity {
         swipe.setEnabled(false);   /* pull-to-refresh disabled: it hijacked scroll-up on inner-scrolling pages */
 
         if (savedInstanceState == null) {
-            web.loadUrl(HOME_URL);
+            String last = getSharedPreferences("hs", MODE_PRIVATE).getString("last_url", HOME_URL);
+            web.loadUrl(last != null && last.contains(APP_HOST) ? last : HOME_URL);
         } else {
             web.restoreState(savedInstanceState);
         }
@@ -152,6 +158,12 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (web.canGoBack()) web.goBack();
         else super.onBackPressed();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        CookieManager.getInstance().flush();
     }
 
     @Override

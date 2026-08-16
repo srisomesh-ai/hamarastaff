@@ -4,3 +4,7 @@
 clients/*.php
 clients/*.png
 !clients/.gitkeep
+api/sessions/
+api/php-error.log
+api/fcm_token_cache.json
+api/drip.log
