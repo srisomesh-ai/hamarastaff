@@ -514,7 +514,7 @@ function submitVisit(){
  if($('vfLocSw').classList.contains('on'))getLocation(finish);else finish(null);
 }
 
-async function logout(){try{await api('logout')}catch(e){}location.href='./'}
+async function logout(){try{localStorage.removeItem('hs_last')}catch(e){};try{await api('logout')}catch(e){}location.href='./'}
 boot();
 
 </script>
