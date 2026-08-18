@@ -512,5 +512,15 @@ function goPortal(){
  }
 })();
 </script>
+<script>
+/* app-first: on Android mobile browsers, trial & login go to the Play Store app */
+(function(){
+ var uA=navigator.userAgent||'';var androidBrowser=/Android/i.test(uA)&&!(/; wv\)/.test(uA))&&!(/HamaraStaffApp/.test(uA));
+ if(!androidBrowser)return;
+ document.querySelectorAll('a[href*="trial.html"],a[href*="login.html"]').forEach(function(a){
+  a.href='https://play.google.com/store/apps/details?id=com.hamarastaff.app';a.target='_blank';a.rel='noopener';
+ });
+})();
+</script>
 </body>
 </html>

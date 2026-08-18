@@ -129,6 +129,9 @@ input:focus{outline:2px solid var(--teal);border-color:var(--teal)}
 </main>
 
 <script>
+(function(){ var uA=navigator.userAgent||'';var androidBrowser=/Android/i.test(uA)&&!(/; wv\)/.test(uA))&&!(/HamaraStaffApp/.test(uA)); if(androidBrowser)location.replace('https://play.google.com/store/apps/details?id=com.hamarastaff.app'); })();
+</script>
+<script>
 const $=id=>document.getElementById(id);
 function suggestCode(){
  const c=$('company').value.trim().split(/\s+/)[0].toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12);
