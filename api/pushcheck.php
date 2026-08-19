@@ -27,12 +27,19 @@ $clients = [];
 foreach (glob(dirname(__DIR__) . '/clients/*.php') as $f) $clients[] = basename($f, '.php');
 foreach ($clients as $code) {
   try {
-    $rows = $pdo->query("SELECT role, COUNT(*) c FROM `{$code}_push_tokens` GROUP BY role")->fetchAll();
-    $parts = [];
-    foreach ($rows as $r) $parts[] = "{$r['role']}: {$r['c']}";
-    echo "   $code — " . ($parts ? implode(', ', $parts) : 'no tokens') . "\n";
+    $rows = $pdo->query("SELECT t.role, t.emp_id, t.updated_at, e.name, e.emp_code
+      FROM `{$code}_push_tokens` t LEFT JOIN `{$code}_employees` e ON e.id = t.emp_id
+      ORDER BY t.role, t.updated_at DESC")->fetchAll();
+    if (!$rows) { echo "   $code - no devices registered\n"; continue; }
+    $emps = 0;
+    try { $emps = (int)$pdo->query("SELECT COUNT(*) FROM `{$code}_employees`")->fetchColumn(); } catch (Exception $e) {}
+    echo "   $code (total employees in account: $emps):\n";
+    foreach ($rows as $r) {
+      $who = $r['role'] === 'admin' ? 'ADMIN device' : (($r['name'] ?: 'deleted employee') . ($r['emp_code'] ? " ({$r['emp_code']})" : ''));
+      echo "      * $who - registered {$r['updated_at']}\n";
+    }
   } catch (Exception $e) {
-    echo "   $code — no token table yet (nobody registered from the app)\n";
+    echo "   $code - no devices registered yet\n";
   }
 }
 echo "\n   (No tokens = the app on that phone hasn't registered. Requires the v3.7 app build,\n    notification permission allowed, and a login/refresh inside the app.)\n";
