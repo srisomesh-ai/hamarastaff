@@ -34,8 +34,8 @@ function downloadExcel(){
 }
 
 /* live updates: poll every 25s + instant sync when app returns to foreground */
-setInterval(()=>{if(document.hidden||!canSilentRefresh())return;refresh().catch(()=>{})},25000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&canSilentRefresh())refresh().catch(()=>{})});
+setInterval(()=>{if(document.hidden||!canSilentRefresh())return;refresh(true).catch(()=>{})},25000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&canSilentRefresh())refresh(true).catch(()=>{})});
 </script>
 <style>
 :root{
@@ -383,9 +383,9 @@ async function boot(){
  if(av)av.textContent=ME.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
  await refresh();
 }
-async function refresh(){hsRegisterPush();
+async function refresh(silent){hsRegisterPush();
  try{[MYDAY,TASKS]=await Promise.all([api('day_get'),api('task_list')]);}
- catch(e){toast('Network error — check connection');return}
+ catch(e){if(!silent)toast('Network error — check connection');return}
  renderEmp();
  if(curTask){curTask=TASKS.find(t=>t.id===curTask.id)||null;
   if(curTask&&$('taskDetail').classList.contains('active'))renderTaskDetail();}
