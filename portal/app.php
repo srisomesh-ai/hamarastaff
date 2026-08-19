@@ -17,7 +17,7 @@ function downloadExcel(){
  const today=new Date().toLocaleDateString('en-IN');
  const att=[["Date","Employee","Attendance","Day Start","Start Location","Day End"]];
  S.employees.forEach(e=>{const d=S.day[e.id];att.push([today,e.name,d?'Present':'Absent',d?d.startedAt:'-',d?`${d.startLoc.area} (${d.startLoc.lat}, ${d.startLoc.lng})`:'-',d&&d.endedAt?d.endedAt:'-'])});
- const act=[["Date","Employee","Client / Doctor","Hospital","Purpose","Task Status","Reached At","Reached Location","Closed At","Outcome","Client Remarks","Report Sent Via"]];
+ const act=[["Date","Employee","Client / Contact","Company / Institution","Purpose","Task Status","Reached At","Reached Location","Closed At","Outcome","Client Remarks","Report Sent Via"]];
  S.tasks.forEach(t=>{const e=emp(t.empId);const reach=t.timeline.find(x=>x.type==='reach');const close=t.timeline.find(x=>x.type==='close');
   act.push([today,e.name,t.doctor,t.hospital,t.purpose,t.status.toUpperCase(),reach?reach.t:'-',reach&&reach.loc?`${reach.loc.area} (${reach.loc.lat}, ${reach.loc.lng})`:'-',close?close.t:'-',t.report?t.report.outcome:'-',t.report?t.report.remarks:'-',t.report&&t.report.sent&&t.report.sent.length?t.report.sent.join(' + '):'-'])});
  const wb=XLSX.utils.book_new();
@@ -431,7 +431,7 @@ async function endDay(){try{MYDAY=await api('day_end');toast('Day ended. Good wo
 function openNewTask(){['ntDoctor','ntHospital','ntArea','ntEmail','ntPhone'].forEach(i=>$(i).value='');show('newTask')}
 function closeNewTask(){history.back()}
 async function saveNewTask(){
- if(!$('ntDoctor').value.trim())return toast('Enter doctor / client name');
+ if(!$('ntDoctor').value.trim())return toast('Enter client / contact name');
  try{
   await api('task_add',{doctor:$('ntDoctor').value,hospital:$('ntHospital').value,area:$('ntArea').value,purpose:$('ntPurpose').value,planned:$('ntTime').value,email:$('ntEmail').value,phone:$('ntPhone').value});
   toast('Visit task saved ✓');history.back();await refresh();
