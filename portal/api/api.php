@@ -232,6 +232,19 @@ case 'day_end': {
   out(dayFor($eid));
 }
 
+case 'day_resume': {
+  $eid=requireEmp();
+  $st=$db->prepare("SELECT end_time FROM hs_attendance WHERE emp_id=? AND att_date=?");
+  $st->execute([$eid,date('Y-m-d')]); $d=$st->fetch();
+  if(!$d) fail('You have not started today yet — use Start My Day.');
+  if($d['end_time']===null) fail('Your day is already running.');
+  $db->prepare("UPDATE hs_attendance SET end_time=NULL WHERE emp_id=? AND att_date=?")->execute([$eid,date('Y-m-d')]);
+  audit($_SESSION['emp_name'],'day_resume','sudden task — day reopened');
+  $n=$_SESSION['emp_name'];
+  hs_after(function() use($n){ push_to_admins('🔄 '.$n.' resumed the day', 'Back on duty · '.date('h:i A')); });
+  out(true);
+}
+
 case 'task_list': { $eid=requireEmp(); out(buildTasks($eid)); }
 
 case 'task_add': {

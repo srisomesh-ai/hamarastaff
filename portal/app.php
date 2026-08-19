@@ -410,7 +410,7 @@ function renderEmp(){
  ? `<div style="font-size:12px;opacity:.85;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Day Started</div>
     <div class="big num">${d.startedAt}</div>
     <div class="locline">📍 ${mapLink(d.startLoc.lat,d.startLoc.lng,d.startLoc.area)}</div>
-    ${d.endedAt?`<div class="locline">🏁 Day ended at ${d.endedAt}</div>`:`<button class="btn" onclick="endDay()">End My Day</button>`}`
+    ${d.endedAt?`<div class="locline">🏁 Day ended at ${d.endedAt}</div><button class="btn" style="background:#fff;color:var(--teal)" onclick="resumeDay()">🔄 Resume My Day — sudden task</button>`:`<button class="btn" onclick="endDay()">End My Day</button>`}`
  : `<div style="font-size:12px;opacity:.85;font-weight:700;text-transform:uppercase;letter-spacing:.5px">Good morning${first?', '+first:''}</div>
     <div class="big">Ready to start?</div>
     <div class="locline">Your start time &amp; location will be recorded</div>
@@ -431,6 +431,11 @@ function taskCard(t){
 function startDay(){getLocation(async loc=>{
  try{MYDAY=await api('day_start',loc);toast('Day started — time & location saved ✓');renderEmp()}
  catch(e){toast(e.message&&e.message.length>12?e.message:'Could not save — try again')}})}
+async function resumeDay(){
+ if(!confirm('Resume your day for a sudden task?\n\nYour day will reopen so you can update visits. Remember to End My Day again when finished — the final end time will be recorded.'))return;
+ try{await api('day_resume');toast('Day resumed ✓ You can update visits now');await refresh()}
+ catch(e){toast(e.message&&e.message.length>12?e.message:'Could not resume — try again')}
+}
 async function endDay(){try{MYDAY=await api('day_end');toast('Day ended. Good work! 🏁');renderEmp()}catch(e){toast(e.message&&e.message.length>12?e.message:'Could not save — try again')}}
 
 /* ---- new task ---- */
