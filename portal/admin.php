@@ -367,7 +367,8 @@ async function boot(){
  try{const me=await api('me');if(me.role!=='admin'){location.href='./';return}}
  catch(e){return}
  await loadAll();
- setInterval(()=>loadAll(true),60000); /* auto-refresh every minute */
+ setInterval(()=>{if(!document.hidden)loadAll(true)},25000); /* live: refresh every 25s */
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadAll(true)});
 }
 async function loadAll(quiet){hsRegisterPush();
  try{D=await api('admin_overview');render()}

@@ -32,6 +32,10 @@ function downloadExcel(){
  XLSX.writeFile(wb,`MEDCY_Daily_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
  toast('Excel report downloaded \u2713');
 }
+
+/* live updates: poll every 25s + instant sync when app returns to foreground */
+setInterval(()=>{if(document.hidden||!canSilentRefresh())return;refresh().catch(()=>{})},25000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&canSilentRefresh())refresh().catch(()=>{})});
 </script>
 <style>
 :root{
@@ -387,6 +391,8 @@ async function refresh(){hsRegisterPush();
   if(curTask&&$('taskDetail').classList.contains('active'))renderTaskDetail();}
 }
 
+function activeScreen(){const a=document.querySelector('.screen.active');return a?a.id:''}
+function canSilentRefresh(){const scr=activeScreen();return scr!=='visitForm'&&scr!=='newTask'}
 function show(id,push=true){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));$(id).classList.add('active');window.scrollTo(0,0);
  if(push&&id!=='empShell')history.pushState({s:id},'');}
 window.addEventListener('popstate',()=>{
