@@ -454,7 +454,7 @@ function trItem(x){return `<div class="tr-item ${x.type==='start'?'start':x.type
 </div>`}
 function renderTaskDetail(){
  const t=curTask;
- const stepIdx=t.status==='open'?1:t.status==='reached'?2:3;
+ const stepIdx=t.status==='open'?1:t.status==='reached'?2:4;
  const steps=['Created','Reached','Closed'].map((s,i)=>`<div class="step ${i+1<stepIdx?'done':i+1===stepIdx?'now':''}"><div class="dot">${i+1<stepIdx?'✓':i+1}</div>${s}</div>`).join('<div class="step-line"></div>');
  $('taskDetailBody').innerHTML=`
   <div class="stepper">${steps}</div>
