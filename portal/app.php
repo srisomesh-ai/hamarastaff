@@ -364,7 +364,7 @@ function pillHTML(st){return `<span class="pill ${st}">${st==='open'?'● Open':
 /* ---- push token registration (from Android app) ---- */
 window.hsSetPushToken=function(t){try{localStorage.setItem('hs_push',t)}catch(e){};hsRegisterPush()};
 function hsRegisterPush(){let t=null;try{t=localStorage.getItem('hs_push')}catch(e){};if(!t)return;
- fetch('api/api.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'push_register',token:t})}).catch(()=>{})}
+ fetch('api/api.php',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'push_register',token:t,as:'emp'})}).catch(()=>{})}
 let ME=null, MYDAY=null, TASKS=[], empF='all', curTask=null;
 function dayActive(){return MYDAY && !MYDAY.endedAt}
 
@@ -514,7 +514,7 @@ function submitVisit(){
  if($('vfLocSw').classList.contains('on'))getLocation(finish);else finish(null);
 }
 
-async function logout(){try{localStorage.removeItem('hs_last')}catch(e){};try{await api('logout')}catch(e){}location.href='./'}
+async function logout(){try{localStorage.removeItem('hs_last')}catch(e){};try{await api('logout',{which:'emp'})}catch(e){}location.href='./'}
 boot();
 
 </script>

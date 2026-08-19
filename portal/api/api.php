@@ -42,9 +42,16 @@ function requireDayStarted($eid){
   if($d['end_time']!==null) fail('Your day has already ended. Visits cannot be updated after End My Day.');
 }
 
-function requireEmp(){ if(($_SESSION['role']??'')!=='emp' || ($_SESSION['tenant']??'')!==CODE) fail('auth',401); return (int)$_SESSION['emp_id']; }
-function requireAdmin(){ if(PLAN==='starter' || ($_SESSION['role']??'')!=='admin' || ($_SESSION['tenant']??'')!==CODE) fail('auth',401); }
-function actorName(){ return ($_SESSION['role']??'')==='admin' ? 'Admin' : ($_SESSION['emp_name'] ?? 'Unknown'); }
+function isEmp(){ return isset($_SESSION['emp_id']) && ($_SESSION['tenant']??'')===CODE; }
+function isAdmin(){ return !empty($_SESSION['is_admin']) && ($_SESSION['tenant']??'')===CODE; }
+function requireEmp(){ if(!isEmp()) fail('auth',401); return (int)$_SESSION['emp_id']; }
+function requireAdmin(){ if(PLAN==='starter' || !isAdmin()) fail('auth',401); }
+function actorName(){ return $_SESSION['emp_name'] ?? (isAdmin() ? 'Admin' : 'Unknown'); }
+/* legacy sessions from the old single-role format */
+if(isset($_SESSION['role'])){
+  if($_SESSION['role']==='admin') $_SESSION['is_admin']=true;
+  unset($_SESSION['role']);
+}
 
 $in = json_decode(file_get_contents('php://input'), true) ?: [];
 $action = $in['action'] ?? '';
@@ -132,7 +139,9 @@ case 'login': {
     if(PLAN==='starter') fail('The management panel is not included in your Starter plan. Contact HamaraStaff to upgrade to Professional.');
     if($u!==ADMIN_USER || $p!==ADMIN_PASS){ audit($u,'login_failed','admin'); fail('invalid'); }
     session_regenerate_id(true);
-    $_SESSION=['role'=>'admin','tenant'=>CODE];
+    if(($_SESSION['tenant']??CODE)!==CODE) $_SESSION=[];       /* switching companies clears everything */
+    $_SESSION['tenant']=CODE;
+    $_SESSION['is_admin']=true;                                 /* employee login (if any) stays intact */
     audit('Admin','login','admin panel');
     out(['role'=>'admin']);
   }
@@ -141,13 +150,15 @@ case 'login': {
   if(!$e || $e['password']!==$p){ audit($u,'login_failed','employee'); fail('invalid'); }
   if(!$e['active']){ audit($e['name'],'login_blocked','account disabled'); fail('disabled'); }
   session_regenerate_id(true);
-  $_SESSION=['role'=>'emp','tenant'=>CODE,'emp_id'=>$e['id'],'emp_name'=>$e['name'],'emp_code'=>$e['emp_code']];
+  if(($_SESSION['tenant']??CODE)!==CODE) $_SESSION=[];
+  $_SESSION['tenant']=CODE;                                     /* admin login (if any) stays intact */
+  $_SESSION['emp_id']=$e['id']; $_SESSION['emp_name']=$e['name']; $_SESSION['emp_code']=$e['emp_code'];
   audit($e['name'],'login','mobile app');
   out(['role'=>'emp','name'=>$e['name'],'emp_code'=>$e['emp_code']]);
 }
 
 case 'revgeo': {
-  $role=$_SESSION['role']??''; if($role!=='emp'&&$role!=='admin') fail('auth',401);
+  if(!isEmp()&&!isAdmin()) fail('auth',401);
   $lat=(float)($in['lat']??0); $lng=(float)($in['lng']??0);
   if(!$lat||!$lng) fail('missing');
   $latr=round($lat,4); $lngr=round($lng,4);
@@ -173,17 +184,28 @@ case 'revgeo': {
 }
 
 case 'push_register': {
-  $role=$_SESSION['role']??''; if($role!=='emp'&&$role!=='admin') fail('auth',401);
-  $ok=push_register_token($role, $role==='emp'?(int)$_SESSION['emp_id']:null, trim($in['token']??''));
+  if(!isEmp()&&!isAdmin()) fail('auth',401);
+  $as=$in['as']??(isEmp()?'emp':'admin');
+  if($as==='emp'&&!isEmp())$as='admin';
+  if($as==='admin'&&!isAdmin())$as='emp';
+  $ok=push_register_token($as, $as==='emp'?(int)$_SESSION['emp_id']:null, trim($in['token']??''));
   out((bool)$ok);
 }
 
-case 'logout': audit(actorName(),'logout'); $_SESSION=[]; session_destroy(); out(true);
+case 'logout': {
+  $which=$in['which']??'all';
+  audit(actorName(),'logout',$which);
+  if($which==='emp'){ unset($_SESSION['emp_id'],$_SESSION['emp_name'],$_SESSION['emp_code']); }
+  elseif($which==='admin'){ unset($_SESSION['is_admin']); }
+  else { $_SESSION=[]; }
+  if(empty($_SESSION['is_admin']) && !isset($_SESSION['emp_id'])){ $_SESSION=[]; session_destroy(); }
+  out(true);
+}
 
 case 'me': {
   if(($_SESSION['tenant']??'')!==CODE) fail('auth',401);
-  if(($_SESSION['role']??'')==='admin') out(['role'=>'admin']);
-  if(($_SESSION['role']??'')==='emp') out(['role'=>'emp','name'=>$_SESSION['emp_name'],'emp_code'=>$_SESSION['emp_code']]);
+  if(isAdmin()) out(['role'=>'admin','alsoEmp'=>isEmp()]);
+  if(isEmp()) out(['role'=>'emp','name'=>$_SESSION['emp_name'],'emp_code'=>$_SESSION['emp_code']]);
   fail('auth',401);
 }
 
@@ -213,13 +235,14 @@ case 'day_end': {
 case 'task_list': { $eid=requireEmp(); out(buildTasks($eid)); }
 
 case 'task_add': {
-  $role=$_SESSION['role']??''; if($role!=='emp'&&$role!=='admin') fail('auth',401);
-  $empId = $role==='admin' ? (int)($in['emp_id']??0) : (int)$_SESSION['emp_id'];
+  if(!isEmp()&&!isAdmin()) fail('auth',401);
+  $asAdmin = isAdmin() && (isset($in['emp_id']) || !isEmp());
+  $empId = $asAdmin ? (int)($in['emp_id']??0) : (int)$_SESSION['emp_id'];
   if(!$empId || !trim($in['doctor']??'')) fail('missing');
   $st=$db->prepare("INSERT INTO hs_tasks (emp_id,doctor,hospital,area,purpose,planned_time,client_email,client_phone,created_by) VALUES (?,?,?,?,?,?,?,?,?)");
-  $st->execute([$empId,trim($in['doctor']),$in['hospital']??'',$in['area']??'',$in['purpose']??'',$in['planned']??'',$in['email']??'',$in['phone']??'',$role==='admin'?'Manager':'Self']);
+  $st->execute([$empId,trim($in['doctor']),$in['hospital']??'',$in['area']??'',$in['purpose']??'',$in['planned']??'',$in['email']??'',$in['phone']??'',$asAdmin?'Manager':'Self']);
   audit(actorName(),'task_create',$in['doctor'].' / '.($in['hospital']??''));
-  if($role==='admin'){
+  if($asAdmin){
     $eid2=$empId; $msg=trim($in['doctor']).(($in['hospital']??'')?' — '.$in['hospital']:'').' · '.(($in['planned']??'')!==''?('at '.$in['planned']):'today');
     hs_after(function() use($eid2,$msg){ push_to_emp($eid2,'New visit assigned 📋', $msg); });
   }
