@@ -273,7 +273,7 @@ tbody tr.click:hover{background:var(--teal-soft)}
       </select>
     </div>
     <div class="card">
-      <table><thead><tr><th>Employee</th><th>Doctor / Client</th><th>Hospital</th><th>Purpose</th><th>Status</th><th>Reached</th><th>Closed</th><th>Report</th></tr></thead>
+      <table><thead><tr><th>Employee</th><th>Client / Contact</th><th>Company / Institution</th><th>Purpose</th><th>Status</th><th>Reached</th><th>Closed</th><th>Report</th></tr></thead>
       <tbody id="visitRows"></tbody></table>
     </div>
   </section>
@@ -414,7 +414,7 @@ function render(){
  $('visitRows').innerHTML=list.map(t=>{const r=t.timeline.find(x=>x.type==='reach');const c=t.timeline.find(x=>x.type==='close');
   return `<tr class="click" onclick="openReport(${t.id})">
   <td><div class="ename"><div class="avatar">${t.empInit}</div>${t.empName}</div></td>
-  <td data-label="Client" style="font-weight:700">${t.doctor}</td><td data-label="Hospital">${t.hospital||'—'}</td><td data-label="Purpose" class="muted">${t.purpose}</td>
+  <td data-label="Client" style="font-weight:700">${t.doctor}</td><td data-label="Company">${t.hospital||'—'}</td><td data-label="Purpose" class="muted">${t.purpose}</td>
   <td data-label="Status">${pill(t.status)}</td><td data-label="Reached" class="num">${r?r.t:'—'}</td><td data-label="Closed" class="num">${c?c.t:'—'}</td>
   <td data-label="Report">${t.report?(t.report.sent.length?'📤 '+t.report.sent.join(' + '):'Saved'):'<span class="muted">—</span>'}</td></tr>`}).join('')
   ||'<tr><td colspan="8" class="muted" style="text-align:center;padding:26px">No visits in this status.</td></tr>';
@@ -511,8 +511,8 @@ function openAssignForm(){
  $('modalBody').innerHTML=`<b style="font-size:18px">Assign Visit Task</b><div style="margin-top:6px">
   <label style="display:block;font-size:11px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 5px">Assign To</label>
   <select id="aE" style="width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;font-family:inherit;font-size:14px">${D.employees.filter(e=>e.active).map(e=>`<option value="${e.id}">${e.name}</option>`).join('')}</select>
-  ${F('aD','Doctor / Client Name','e.g. Dr. K. Prasad')}
-  ${F('aH','Hospital / Clinic','e.g. Apollo Clinic')}
+  ${F('aD','Client / Contact Name','e.g. Ravi Kumar / Dr. Prasad')}
+  ${F('aH','Company / Institution','e.g. ABC School / XYZ Industries')}
   ${F('aA','Area','e.g. Waltair')}
   <label style="display:block;font-size:11px;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin:12px 0 5px">Purpose</label>
   <select id="aP" style="width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:11px;font-family:inherit;font-size:14px">
@@ -645,7 +645,7 @@ function downloadExcel(){
  const today=new Date().toLocaleDateString('en-IN');
  const att=[["Date","Employee","Attendance","Day Start","Start Location","Day End"]];
  D.employees.forEach(e=>{const d=e.day;att.push([today,e.name,d?'Present':(D.noonPassed?'Absent':'Not Marked'),d?d.startedAt:'-',d?`${d.startLoc.area} (${d.startLoc.lat}, ${d.startLoc.lng})`:'-',d&&d.endedAt?d.endedAt:'-'])});
- const act=[["Date","Employee","Client / Doctor","Hospital","Purpose","Task Status","Reached At","Reached Location","Closed At","Outcome","Client Remarks","Report Sent Via"]];
+ const act=[["Date","Employee","Client / Contact","Company / Institution","Purpose","Task Status","Reached At","Reached Location","Closed At","Outcome","Client Remarks","Report Sent Via"]];
  D.tasks.forEach(t=>{const r=t.timeline.find(x=>x.type==='reach');const c=t.timeline.find(x=>x.type==='close');
   act.push([t.createdAt?t.createdAt.slice(0,10):today,t.empName,t.doctor,t.hospital,t.purpose,t.status.toUpperCase(),r?r.t:'-',r&&r.loc&&r.loc.lat?`${r.loc.area} (${r.loc.lat}, ${r.loc.lng})`:'-',c?c.t:'-',t.report?t.report.outcome:'-',t.report?t.report.remarks:'-',t.report&&t.report.sent.length?t.report.sent.join(' + '):'-'])});
  const mon=[["Month","Employee","Working Days","Present","Absent","Attendance %","HOD Approval"]];

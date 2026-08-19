@@ -232,10 +232,10 @@ label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:14p
       <label>Assign To (MR)</label>
       <select id="ntEmp"></select>
     </div>
-    <label>Doctor / Client Name</label>
-    <input id="ntDoctor" placeholder="e.g. Dr. K. Prasad">
-    <label>Hospital / Clinic</label>
-    <input id="ntHospital" placeholder="e.g. Apollo Clinic, Waltair">
+    <label>Client / Contact Name</label>
+    <input id="ntDoctor" placeholder="e.g. Ravi Kumar / Dr. Prasad">
+    <label>Company / Institution</label>
+    <input id="ntHospital" placeholder="e.g. ABC School / Apollo Clinic / XYZ Industries">
     <label>Area</label>
     <input id="ntArea" placeholder="e.g. Dwaraka Nagar">
     <label>Purpose of Visit</label>
@@ -249,7 +249,7 @@ label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:14p
     <label>Planned Time</label>
     <input id="ntTime" type="time">
     <label>Client Email (for visit report)</label>
-    <input id="ntEmail" type="email" placeholder="doctor@clinic.com">
+    <input id="ntEmail" type="email" placeholder="client@company.com">
     <label>Client WhatsApp Number</label>
     <input id="ntPhone" type="tel" placeholder="+91 9XXXXXXXXX">
     <div style="height:16px"></div>
@@ -270,14 +270,14 @@ label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:14p
     <div class="card" id="vfHead"></div>
     <label>Person Met</label>
     <input id="vfMet" placeholder="e.g. Dr. Prasad / Pharmacy In-charge">
-    <label>Products Discussed</label>
+    <label>Products / Services Discussed</label>
     <div class="chips" id="vfProducts"></div>
     <label>Demo Given?</label>
     <div class="seg" id="vfDemo">
       <button class="on" onclick="segPick(this)">Yes</button>
       <button onclick="segPick(this)">No</button>
     </div>
-    <label>Samples Given (Qty)</label>
+    <label>Samples / Materials Given (Qty)</label>
     <input id="vfSamples" type="number" placeholder="0" min="0">
     <label>Visit Outcome</label>
     <select id="vfOutcome">
@@ -314,7 +314,7 @@ label{display:block;font-size:12.5px;font-weight:700;color:var(--sub);margin:14p
 
 <script>
 /* =============== MEDCY MOBILE — API DRIVEN =============== */
-const PRODUCTS=['Cardio-Z 40','Neurofast SR','GlucoCare Plus','OrthoFlex Gel','PediaVit Drops'];
+const PRODUCTS=['Product Demo','Service Explained','New Launch','Pricing Discussed','Brochure Given','Quotation Shared','Order Taken','Complaint Resolved'];
 const $=id=>document.getElementById(id);
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600)}
 async function api(action,data={}){

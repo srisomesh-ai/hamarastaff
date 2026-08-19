@@ -96,5 +96,6 @@ function db() {
     [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
      PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC]
   );
+  try { $pdo->exec("SET time_zone = '+05:30'"); } catch (Throwable $e) {}   /* IST for NOW()/CURDATE on any server */
   return $pdo;
 }
