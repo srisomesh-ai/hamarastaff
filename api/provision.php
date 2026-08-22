@@ -223,6 +223,12 @@ case 'extend': {
   out(['ends'=>$ends]);
 }
 
+case 'owner_push_register': {
+  requireSuper();
+  require_once __DIR__ . '/ownerpush.php';
+  out(['ok'=>owner_push_register(trim($in['token']??''))]);
+}
+
 case 'set_admin_pass': {
   requireSuper();
   $code=strtolower(trim($in['code']??''));

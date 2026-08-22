@@ -2,6 +2,7 @@
 /* ============ HamaraStaff FREE TRIAL SIGNUP API ============ */
 require __DIR__ . '/config.php';
 require __DIR__ . '/mailer.php';
+require __DIR__ . '/ownerpush.php';
 header('Content-Type: application/json; charset=utf-8');
 function out($d){ echo json_encode(['ok'=>true,'data'=>$d]); exit; }
 function fail($e,$c=400){ http_response_code($c); echo json_encode(['ok'=>false,'error'=>$e]); exit; }
@@ -102,6 +103,7 @@ $mailed = hs_send_mail($email, $wSub, $wBody, $wCta, $wUrl);
 
 /* notify the owner — full customer details for follow-up */
 [$lSub, $lBody, $lCta, $lUrl] = hs_lead_email($name, $code, $email, $phoneDigits, $endsNice, $city . ', ' . $state);
+@owner_push_send('🔔 New trial: ' . $name, $city . ', ' . $state . ' · 📞 ' . $phoneDigits);
 foreach (['someswararao.pyle@gmail.com', 'info@hamarastaff.com'] as $ownerTo) {
   hs_send_mail($ownerTo, $lSub, $lBody, $lCta, $lUrl);
 }
