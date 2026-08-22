@@ -113,6 +113,8 @@ function clientList($CLIENTS){
     $email=null;
     if(preg_match("/define\('TRIAL_EMAIL',\s*'((?:[^'\\\\]|\\\\.)*)'\)/",$cfg,$em)) $email=stripslashes($em[1]);
     $phone=pv($cfg,'TRIAL_PHONE'); $loc=trim(pv($cfg,'TRIAL_CITY').(pv($cfg,'TRIAL_STATE')?', '.pv($cfg,'TRIAL_STATE'):''),', ');
+    $reg = pv($cfg,'CREATED_AT');
+    if(!$reg){ $te=pv($cfg,'TRIAL_ENDS'); $reg = $te ? date('Y-m-d', strtotime($te.' -7 days')) : date('Y-m-d', filectime($f)); }
     $drip=null; if($plan==='trial'){ $drip = preg_match("/define\('DRIP_STAGE',\s*(\d+)\)/",$cfg,$dm) ? (int)$dm[1] : 0; }
     $emps=null; $monthly=null;
     try{
@@ -123,7 +125,7 @@ function clientList($CLIENTS){
         $monthly=max($emps,$minn)*$rate;
       }
     }catch(Exception $e){}
-    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'ends'=>$ends,'email'=>$email,'phone'=>$phone,'loc'=>$loc,'adminAct'=>($adminAct??null),'drip'=>$drip,'emps'=>$emps,'monthly'=>$monthly,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
+    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'ends'=>$ends,'email'=>$email,'phone'=>$phone,'loc'=>$loc,'adminAct'=>($adminAct??null),'reg'=>$reg,'drip'=>$drip,'emps'=>$emps,'monthly'=>$monthly,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
   }
   return $list;
 }

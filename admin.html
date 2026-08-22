@@ -105,6 +105,13 @@ label{display:block;font-size:11.5px;font-weight:800;color:var(--sub);text-trans
       <button class="btn ghost" onclick="loadClients()">↻ Refresh</button>
       <button class="btn primary" onclick="openCreate()">＋ Create New Client</button>
     </div>
+    <div style="display:flex;gap:10px;align-items:center;margin:0 0 14px;flex-wrap:wrap">
+     <input id="cSearch" placeholder="🔍 Search name, company, phone, email, city…" oninput="renderClients()" style="flex:1;min-width:220px;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;font-family:inherit;font-size:14px">
+     <div style="display:flex;border:1.5px solid var(--line);border-radius:11px;overflow:hidden">
+      <button id="vwCards" class="btn ghost" style="border:none;border-radius:0" onclick="setView('cards')">🗂 Cards</button>
+      <button id="vwList" class="btn ghost" style="border:none;border-radius:0" onclick="setView('list')">📋 List</button>
+     </div>
+    </div>
     <div class="grid" id="clientGrid"></div>
   </div>
 </div>
@@ -150,9 +157,41 @@ async function superLogin(){
 }
 async function superLogout(){try{await api('logout')}catch(e){}showLogin()}
 
+let ALLCLIENTS=[];
+let VIEW=localStorage.getItem('hs_view')||'cards';
+function setView(v){VIEW=v;try{localStorage.setItem('hs_view',v)}catch(e){};renderClients()}
+function markViewBtns(){['vwCards','vwList'].forEach(id=>{const b=$(id);if(b){const on=(VIEW==='cards')===(id==='vwCards');b.style.background=on?'var(--teal)':'#fff';b.style.color=on?'#fff':'var(--ink)'}})}
+function matchesSearch(c){
+ const q=($('cSearch')?$('cSearch').value:'').trim().toLowerCase();
+ if(!q)return true;
+ return [c.name,c.code,c.email,c.phone,c.loc].some(v=>v&&String(v).toLowerCase().includes(q));
+}
+function fmtReg(d){if(!d)return '—';const p=String(d).split('-');return p.length===3?`${+p[2]} ${['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]]} ${p[0]}`:d}
+function renderClientTable(list){
+ const rows=list.map(c=>`
+  <tr style="border-top:1px solid var(--line);cursor:pointer" onclick="staffView('${c.code}','${(c.name||c.code).replace(/'/g,'')}')">
+   <td style="padding:10px 8px"><b>${c.name||c.code}</b><div class="muted" style="font-size:11px">${c.code}</div></td>
+   <td style="padding:10px 8px;font-size:12px">${c.email?c.email+'<br>':''}${c.phone?'<a href="tel:+91'+c.phone+'" onclick="event.stopPropagation()" style="color:var(--teal);font-weight:700">'+c.phone+'</a>':''}</td>
+   <td style="padding:10px 8px;font-size:12px">${c.loc||'—'}</td>
+   <td style="padding:10px 8px;font-size:12px;white-space:nowrap">${fmtReg(c.reg)}</td>
+   <td style="padding:10px 8px;font-size:12px;white-space:nowrap">${c.plan==='trial'?(c.days<0?'⏳ Expired':'🎁 Trial '+(c.days===0?'last day':c.days+'d')):(c.plan==='starter'?'₹150':'₹250')+(c.monthly?' · ₹'+c.monthly.toLocaleString('en-IN')+'/mo':'')}</td>
+   <td style="padding:10px 8px;font-size:12px;text-align:center">${c.emps!==null&&c.emps!==undefined?c.emps:'—'}</td>
+   <td style="padding:10px 8px;font-size:11.5px">${c.adminAct?(c.adminAct.online?'<b style="color:#1E7B34">🟢 Online now</b>':(c.adminAct.last?c.adminAct.last+(c.adminAct.week?' · '+c.adminAct.week+'x/wk':''):'<span style="color:#B3261E;font-weight:700">never opened</span>')):'—'}</td>
+  </tr>`).join('');
+ return `<div style="overflow:auto;background:#fff;border:1px solid var(--line);border-radius:16px">
+  <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:860px">
+   <tr class="muted" style="font-size:10.5px;text-transform:uppercase;letter-spacing:.5px"><td style="padding:8px">Company</td><td style="padding:8px">Contact</td><td style="padding:8px">Location</td><td style="padding:8px">Registered</td><td style="padding:8px">Plan</td><td style="padding:8px">Staff</td><td style="padding:8px">Panel Last Login</td></tr>
+   ${rows||'<tr><td colspan=7 class="muted" style="padding:16px">No matching clients</td></tr>'}
+  </table></div>`;
+}
 async function loadClients(){
- let list=[];
- try{list=await api('list')}catch(e){if(e.message!=='auth')toast(e.message);return}
+ try{ALLCLIENTS=await api('list')}catch(e){if(e.message!=='auth')toast(e.message);return}
+ renderClients();
+}
+function renderClients(){
+ markViewBtns();
+ const list=ALLCLIENTS.filter(matchesSearch);
+ if(VIEW==='list'){ $('clientGrid').innerHTML=renderClientTable(list); return; }
  $('clientGrid').innerHTML=list.length?list.map(c=>`
   <div class="client">
    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
