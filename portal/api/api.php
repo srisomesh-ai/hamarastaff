@@ -47,6 +47,23 @@ function isAdmin(){ return !empty($_SESSION['is_admin']) && ($_SESSION['tenant']
 function requireEmp(){ if(!isEmp()) fail('auth',401); return (int)$_SESSION['emp_id']; }
 function requireAdmin(){ if(PLAN==='starter' || !isAdmin()) fail('auth',401); }
 function actorName(){ return $_SESSION['emp_name'] ?? (isAdmin() ? 'Admin' : 'Unknown'); }
+function ensureActivityCols(){
+  if(!empty($_SESSION['act_cols_ok'])) return;
+  try{ db()->exec("ALTER TABLE hs_employees ADD COLUMN last_seen DATETIME NULL, ADD COLUMN last_login DATETIME NULL, ADD COLUMN last_logout DATETIME NULL"); }catch(Throwable $e){}
+  try{ db()->exec("CREATE TABLE IF NOT EXISTS hs_kv (k VARCHAR(64) PRIMARY KEY, v VARCHAR(255)) ENGINE=InnoDB"); }catch(Throwable $e){}
+  $_SESSION['act_cols_ok']=1;
+}
+function kvSet($k,$v){ try{ db()->prepare("INSERT INTO hs_kv (k,v) VALUES (?,?) ON DUPLICATE KEY UPDATE v=VALUES(v)")->execute([$k,$v]); }catch(Throwable $e){} }
+/* heartbeat: mark whoever is calling as seen (throttled to once/min) */
+if(time() - ($_SESSION['hb_ts'] ?? 0) > 60){
+  $_SESSION['hb_ts']=time();
+  ensureActivityCols();
+  if(isset($_SESSION['emp_id']) && ($_SESSION['tenant']??'')===CODE){
+    try{ db()->prepare("UPDATE hs_employees SET last_seen=NOW() WHERE id=?")->execute([(int)$_SESSION['emp_id']]); }catch(Throwable $e){}
+  }
+  if(!empty($_SESSION['is_admin']) && ($_SESSION['tenant']??'')===CODE) kvSet('admin_last_seen', date('Y-m-d H:i:s'));
+}
+
 /* legacy sessions from the old single-role format */
 if(isset($_SESSION['role'])){
   if($_SESSION['role']==='admin') $_SESSION['is_admin']=true;
@@ -142,6 +159,7 @@ case 'login': {
     if(($_SESSION['tenant']??CODE)!==CODE) $_SESSION=[];       /* switching companies clears everything */
     $_SESSION['tenant']=CODE;
     $_SESSION['is_admin']=true;                                 /* employee login (if any) stays intact */
+    ensureActivityCols(); kvSet('admin_last_login', date('Y-m-d H:i:s'));
     audit('Admin','login','admin panel');
     out(['role'=>'admin']);
   }
@@ -153,6 +171,8 @@ case 'login': {
   if(($_SESSION['tenant']??CODE)!==CODE) $_SESSION=[];
   $_SESSION['tenant']=CODE;                                     /* admin login (if any) stays intact */
   $_SESSION['emp_id']=$e['id']; $_SESSION['emp_name']=$e['name']; $_SESSION['emp_code']=$e['emp_code'];
+  ensureActivityCols();
+  try{ db()->prepare("UPDATE hs_employees SET last_login=NOW(), last_seen=NOW() WHERE id=?")->execute([(int)$e['id']]); }catch(Throwable $e2){}
   audit($e['name'],'login','mobile app');
   out(['role'=>'emp','name'=>$e['name'],'emp_code'=>$e['emp_code']]);
 }
@@ -195,8 +215,11 @@ case 'push_register': {
 case 'logout': {
   $which=$in['which']??'all';
   audit(actorName(),'logout',$which);
-  if($which==='emp'){ unset($_SESSION['emp_id'],$_SESSION['emp_name'],$_SESSION['emp_code']); }
-  elseif($which==='admin'){ unset($_SESSION['is_admin']); }
+  if($which==='emp'){
+    if(isset($_SESSION['emp_id'])){ ensureActivityCols(); try{ db()->prepare("UPDATE hs_employees SET last_logout=NOW() WHERE id=?")->execute([(int)$_SESSION['emp_id']]); }catch(Throwable $e){} }
+    unset($_SESSION['emp_id'],$_SESSION['emp_name'],$_SESSION['emp_code']);
+  }
+  elseif($which==='admin'){ ensureActivityCols(); kvSet('admin_last_logout', date('Y-m-d H:i:s')); unset($_SESSION['is_admin']); }
   else { $_SESSION=[]; }
   if(empty($_SESSION['is_admin']) && !isset($_SESSION['emp_id'])){ $_SESSION=[]; session_destroy(); }
   out(true);

@@ -159,7 +159,7 @@ async function loadClients(){
     ${c.logo?`<img src="${c.logo}?v=${Date.now()}" style="width:46px;height:46px;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:#fff;padding:4px">`:`<div style="width:46px;height:46px;border-radius:12px;background:var(--soft);display:flex;align-items:center;justify-content:center;font-size:22px">🏢</div>`}
     <div><div class="code">${c.code.toUpperCase()}</div><div class="nm" style="margin:0">${c.name}</div></div>
    </div>
-   <span class="st ok">● Live</span> <span class="st" style="background:${c.plan==='trial'?(c.days<0?'#FBE9E7':'var(--amber-soft)'):c.plan==='starter'?'var(--amber-soft)':'var(--soft)'};color:${c.plan==='trial'?(c.days<0?'var(--red)':'var(--amber)'):c.plan==='starter'?'var(--amber)':'var(--teal)'}">${c.plan==='trial'?(c.days>=5?'<b style="background:#FFB300;color:#13211F;border-radius:6px;padding:1px 6px;margin-right:4px">NEW</b> ':'')+(c.days<0?'⏳ Trial EXPIRED':'🎁 Trial · '+(c.days===0?'last day':c.days+'d left')):(c.plan==='starter'?'₹150 Starter':'₹250 Professional')+(c.monthly?' · ₹'+c.monthly.toLocaleString('en-IN')+'/mo ('+c.emps+' emp)':'')+(c.ends?(c.days<0?' · EXPIRED '+c.ends:' · till '+c.ends+' ('+c.days+'d)'):'')}</span>
+   <span class="st ok">● Live</span> <span class="st" style="background:${c.plan==='trial'?(c.days<0?'#FBE9E7':'var(--amber-soft)'):c.plan==='starter'?'var(--amber-soft)':'var(--soft)'};color:${c.plan==='trial'?(c.days<0?'var(--red)':'var(--amber)'):c.plan==='starter'?'var(--amber)':'var(--teal)'}">${c.plan==='trial'?(c.days>=5?'<b style="background:#FFB300;color:#13211F;border-radius:6px;padding:1px 6px;margin-right:4px">NEW</b> ':'')+(c.days<0?'⏳ Trial EXPIRED':'🎁 Trial · '+(c.days===0?'last day':c.days+'d left'))+(c.emps!==null?' · '+c.emps+' staff':''):(c.plan==='starter'?'₹150 Starter':'₹250 Professional')+(c.monthly?' · ₹'+c.monthly.toLocaleString('en-IN')+'/mo ('+c.emps+' emp)':'')+(c.ends?(c.days<0?' · EXPIRED '+c.ends:' · till '+c.ends+' ('+c.days+'d)'):'')}</span>
    ${c.email?`<div style="font-size:11.5px;color:var(--sub);font-weight:700;margin-top:6px">✉️ ${c.email}${c.phone?` · 📞 <a href="tel:+91${c.phone}" style="color:var(--teal)">${c.phone}</a> · <a href="https://wa.me/91${c.phone}" target="_blank" style="color:var(--green)">WhatsApp</a>`:''}${c.loc?` · 📍 ${c.loc}`:''}${c.plan==='trial'&&c.drip!==null?` · 📧 ${c.drip}/10 emails`:''}</div>`:''}
    <div class="acts">
     <a class="btn ghost" href="/${c.code}/" target="_blank">Open Portal</a>
@@ -167,6 +167,7 @@ async function loadClients(){
     <button class="btn ghost" onclick="pickLogo('${c.code}')">${c.logo?'Change Logo':'Set Logo'}</button>
     <a class="btn ghost" style="text-decoration:none" href="api/provision.php?action=backup&code=${c.code}" download>⬇ Backup</a>
     <button class="btn ghost" onclick="resetPass('${c.code}')">🔑 Reset Password</button>
+    <button class="btn ghost" onclick="staffView('${c.code}','${(c.name||c.code).replace(/'/g,'')}')">👥 Staff &amp; Activity</button>
     ${c.plan==='trial'?`<button class="btn primary" style="padding:9px 13px;font-size:12px;border-radius:10px" onclick="activate('${c.code}','professional')">Activate ₹250</button>
     <button class="btn ghost" onclick="activate('${c.code}','starter')">Activate ₹150</button>`
     :`<button class="btn primary" style="padding:9px 13px;font-size:12px;border-radius:10px" onclick="extendClient('${c.code}')">＋ Extend Validity</button>
@@ -272,6 +273,32 @@ async function extendClient(code){
  if(m===null)return;
  const months=parseInt(m)||1;
  try{const r=await api('extend',{code,months});toast(code.toUpperCase()+' extended ✓ now valid till '+r.ends);loadClients()}catch(e){toast(e.message)}
+}
+async function staffView(code,name){
+ $('modalBody').innerHTML='<b style="font-size:18px">👥 '+name+' — Staff & Activity</b><div class="muted" style="margin-top:10px">Loading…</div>';
+ $('overlay').classList.add('show');
+ let d=null;
+ try{d=await api('client_detail',{code})}catch(e){$('modalBody').innerHTML+='<div style="color:#B3261E;font-weight:700;margin-top:8px">'+e.message+'</div>';return}
+ const dot=o=>`<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${o?'#1E7B34':'#98A8A5'};margin-right:6px"></span>`;
+ const rows=(d.staff||[]).map(r=>`
+  <tr style="border-top:1px solid var(--line)">
+   <td style="padding:9px 8px"><b>${r.name}</b><div class="muted" style="font-size:11px">${r.emp_code}${r.active==1?'':' · <span style="color:#B3261E;font-weight:700">disabled</span>'}</div></td>
+   <td style="padding:9px 8px;white-space:nowrap">${dot(r.online)}${r.online?'<b style="color:#1E7B34">Online</b>':'Offline'}<div class="muted" style="font-size:11px">${r.last_seen?'seen '+r.last_seen:'never seen'}</div></td>
+   <td style="padding:9px 8px;font-size:12px">${r.start_time?('▶ '+r.start_time+(r.end_time?'<br>🏁 '+r.end_time:'<br><span style="color:#1E7B34;font-weight:700">on duty</span>')):'<span class="muted">not started today</span>'}</td>
+   <td style="padding:9px 8px;font-size:11.5px" class="muted">in: ${r.last_login||'—'}<br>out: ${r.last_logout||'—'}</td>
+  </tr>`).join('');
+ $('modalBody').innerHTML=`
+  <b style="font-size:18px">👥 ${name} — Staff & Activity</b>
+  <div style="background:var(--soft);border-radius:12px;padding:10px 14px;margin-top:12px;font-size:13px">
+   ${dot(d.admin.online)}<b>Management Panel</b> — ${d.admin.online?'<b style="color:#1E7B34">Online now</b>':'Offline'}
+   <span class="muted" style="font-size:11.5px"> · login: ${d.admin.last_login||'—'} · logout: ${d.admin.last_logout||'—'}${d.admin.last_seen?' · seen: '+d.admin.last_seen:''}</span>
+  </div>
+  <div style="max-height:52vh;overflow:auto;margin-top:12px">
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+   <tr class="muted" style="font-size:11px;text-transform:uppercase;letter-spacing:.5px"><td style="padding:4px 8px">Employee</td><td style="padding:4px 8px">Status</td><td style="padding:4px 8px">Today</td><td style="padding:4px 8px">Last In / Out</td></tr>
+   ${rows||'<tr><td colspan=4 class="muted" style="padding:14px 8px">No employees yet</td></tr>'}
+  </table></div>
+  <button class="btn ghost" style="margin-top:12px" onclick="staffView('${code}','${name.replace(/'/g,'')}')">↻ Refresh</button>`;
 }
 async function resetPass(code){
  const p=prompt('Reset admin password for '+code.toUpperCase()+'.\n\nEnter a new password, or leave BLANK to auto-generate:');

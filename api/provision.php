@@ -115,14 +115,14 @@ function clientList($CLIENTS){
     $phone=pv($cfg,'TRIAL_PHONE'); $loc=trim(pv($cfg,'TRIAL_CITY').(pv($cfg,'TRIAL_STATE')?', '.pv($cfg,'TRIAL_STATE'):''),', ');
     $drip=null; if($plan==='trial'){ $drip = preg_match("/define\('DRIP_STAGE',\s*(\d+)\)/",$cfg,$dm) ? (int)$dm[1] : 0; }
     $emps=null; $monthly=null;
-    if($plan!=='trial'){
-      try{
-        $pdo=new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8mb4',DB_USER,DB_PASS,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
-        $emps=(int)$pdo->query("SELECT COUNT(*) FROM `{$code}_employees`")->fetchColumn();
+    try{
+      $pdo=new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8mb4',DB_USER,DB_PASS,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+      $emps=(int)$pdo->query("SELECT COUNT(*) FROM `{$code}_employees`")->fetchColumn();
+      if($plan!=='trial'){
         $rate=$plan==='starter'?150:250; $minn=$plan==='starter'?10:20;
         $monthly=max($emps,$minn)*$rate;
-      }catch(Exception $e){}
-    }
+      }
+    }catch(Exception $e){}
     $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'ends'=>$ends,'email'=>$email,'phone'=>$phone,'loc'=>$loc,'drip'=>$drip,'emps'=>$emps,'monthly'=>$monthly,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
   }
   return $list;
@@ -221,6 +221,40 @@ case 'extend': {
   $curPlan = pv($cfg,'PLAN') ?: 'professional';
   notifyPlanEmail($cfg,$code,$curPlan,$ends,'extend');
   out(['ends'=>$ends]);
+}
+
+case 'client_detail': {
+  requireSuper();
+  $code=strtolower(trim($in['code']??$_GET['code']??''));
+  if(!preg_match('/^[a-z0-9][a-z0-9-]{1,19}$/',$code) || !file_exists("$CLIENTS/$code.php")) fail('Client not found',404);
+  $pdo=new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8mb4',DB_USER,DB_PASS,
+    [PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION,PDO::ATTR_DEFAULT_FETCH_MODE=>PDO::FETCH_ASSOC]);
+  $pdo->exec("SET time_zone='+05:30'");
+  $staff=[];
+  try{
+    $staff=$pdo->query("SELECT e.emp_code,e.name,e.active,
+        e.last_seen,e.last_login,e.last_logout,
+        a.start_time,a.end_time
+      FROM `{$code}_employees` e
+      LEFT JOIN `{$code}_attendance` a ON a.emp_id=e.id AND a.att_date=CURDATE()
+      ORDER BY e.name")->fetchAll();
+  }catch(Exception $e){
+    try{ $staff=$pdo->query("SELECT emp_code,name,active,NULL last_seen,NULL last_login,NULL last_logout,NULL start_time,NULL end_time FROM `{$code}_employees` ORDER BY name")->fetchAll(); }catch(Exception $e2){}
+  }
+  foreach($staff as &$r){
+    $r['online'] = $r['last_seen'] && (time()-strtotime($r['last_seen']) < 150);
+    foreach(['last_seen','last_login','last_logout','start_time','end_time'] as $kk)
+      if(!empty($r[$kk])) $r[$kk]=date('d M h:i A',strtotime($r[$kk]));
+  }
+  $adm=['last_seen'=>null,'last_login'=>null,'last_logout'=>null,'online'=>false];
+  try{
+    foreach($pdo->query("SELECT k,v FROM `{$code}_kv` WHERE k IN ('admin_last_seen','admin_last_login','admin_last_logout')")->fetchAll() as $kvr){
+      $key=str_replace('admin_','',$kvr['k']);
+      if($key==='last_seen') $adm['online'] = (time()-strtotime($kvr['v']) < 150);
+      $adm[$key]=date('d M h:i A',strtotime($kvr['v']));
+    }
+  }catch(Exception $e){}
+  out(['staff'=>$staff,'admin'=>$adm]);
 }
 
 case 'owner_push_register': {
