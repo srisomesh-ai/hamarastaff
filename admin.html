@@ -191,7 +191,8 @@ async function loadClients(){
 function renderClients(){
  markViewBtns();
  const list=ALLCLIENTS.filter(matchesSearch);
- if(VIEW==='list'){ $('clientGrid').innerHTML=renderClientTable(list); return; }
+ if(VIEW==='list'){ $('clientGrid').style.display='block'; $('clientGrid').innerHTML=renderClientTable(list); return; }
+ $('clientGrid').style.display='';
  $('clientGrid').innerHTML=list.length?list.map(c=>`
   <div class="client">
    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
