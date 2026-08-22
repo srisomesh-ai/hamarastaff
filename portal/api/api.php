@@ -382,9 +382,16 @@ case 'admin_overview': {
 
 case 'emp_add': {
   requireAdmin();
-  if(PLAN==='trial'){
-    $cnt=$db->query("SELECT COUNT(*) c FROM hs_employees")->fetch()['c'];
-    if($cnt>=10) fail('Trial accounts can have up to 10 employees. Activate a plan to add your full team.');
+  $cnt=(int)$db->query("SELECT COUNT(*) c FROM hs_employees")->fetch()['c'];
+  if(PLAN==='trial' && $cnt>=10){
+    /* buying signal — tell the owner immediately */
+    hs_after(function(){
+      require_once dirname(__DIR__,2).'/api/mailer.php';
+      @hs_send_mail('someswararao.pyle@gmail.com','🔥 Hot lead: '.strtoupper(CODE).' hit the 10-employee trial limit',
+        "<p><b>".htmlspecialchars(COMPANY_NAME)."</b> (".strtoupper(CODE).") just tried to add an 11th employee on their trial.</p><p>They have a real team — perfect moment to call and close the plan.</p>",
+        'Open Owner Panel','https://hamarastaff.com/admin.html');
+    });
+    fail('Trial accounts can have up to 10 employees. Activate a plan (₹150 or ₹250 per employee/month) to add your full team — see Plan & Billing.');
   }
   $c=trim($in['emp_code']??''); $n=trim($in['name']??''); $p=trim($in['password']??'');
   if(!$c||!$n||!$p) fail('missing');
@@ -393,6 +400,19 @@ case 'emp_add': {
   $db->prepare("INSERT INTO hs_employees (emp_code,name,password,area) VALUES (?,?,?,?)")
      ->execute([$c,$n,$p,trim($in['area']??'')]);
   audit('Admin','emp_create',"$n ($c)");
+  /* paid plans: adding beyond the billing floor changes the renewal amount — inform the owner */
+  if(PLAN!=='trial'){
+    $newCnt=$cnt+1; $rate=PLAN==='starter'?150:250; $minn=PLAN==='starter'?10:20;
+    if($newCnt>$minn){
+      $mon=$newCnt*$rate; $nm=$n;
+      hs_after(function() use($newCnt,$mon,$nm){
+        require_once dirname(__DIR__,2).'/api/mailer.php';
+        @hs_send_mail('someswararao.pyle@gmail.com','📈 '.strtoupper(CODE).' grew to '.$newCnt.' employees — renewal now ₹'.number_format($mon).'/mo',
+          "<p><b>".htmlspecialchars(COMPANY_NAME)."</b> (".strtoupper(CODE).") added employee <b>".htmlspecialchars($nm)."</b>.</p><p>Registered employees: <b>$newCnt</b> · Next renewal: <b>₹".number_format($mon)."/month</b>.</p>",
+          'Open Owner Panel','https://hamarastaff.com/admin.html');
+      });
+    }
+  }
   out(true);
 }
 
