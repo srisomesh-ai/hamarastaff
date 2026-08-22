@@ -123,7 +123,7 @@ function clientList($CLIENTS){
         $monthly=max($emps,$minn)*$rate;
       }
     }catch(Exception $e){}
-    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'ends'=>$ends,'email'=>$email,'phone'=>$phone,'loc'=>$loc,'drip'=>$drip,'emps'=>$emps,'monthly'=>$monthly,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
+    $list[]=['code'=>$code,'name'=>$name,'plan'=>$plan,'days'=>$days,'ends'=>$ends,'email'=>$email,'phone'=>$phone,'loc'=>$loc,'adminAct'=>($adminAct??null),'drip'=>$drip,'emps'=>$emps,'monthly'=>$monthly,'logo'=>file_exists("$CLIENTS/$code-logo.png")?"/clients/$code-logo.png":null];
   }
   return $list;
 }
