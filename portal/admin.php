@@ -658,7 +658,7 @@ function downloadExcel(){
  XLSX.utils.book_append_sheet(wb,w1,"Attendance");
  XLSX.utils.book_append_sheet(wb,w2,"Daily Activity");
  XLSX.utils.book_append_sheet(wb,w3,"Monthly Summary");
- XLSX.writeFile(wb,`MEDCY_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+ XLSX.writeFile(wb,`${(<?= json_encode(COMPANY_NAME) ?>).replace(/[^\w\u0900-\u0D7F -]/g,'').trim().replace(/\s+/g,'_')}_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
  toast('Excel report downloaded ✓');
 }
 boot();

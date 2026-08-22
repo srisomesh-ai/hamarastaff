@@ -29,7 +29,7 @@ function downloadExcel(){
  S.employees.forEach(e=>{const m=S.month[e.id];mon.push(["July 2026",e.name,WD,m.p,m.l,WD-m.p-m.l,Math.round(m.p/WD*100)+"%",S.hodApproved?"Approved for Payroll":"Pending"])});
  const ws3=XLSX.utils.aoa_to_sheet(mon);ws3['!cols']=[{wch:11},{wch:16},{wch:13},{wch:9},{wch:7},{wch:8},{wch:13},{wch:20}];
  XLSX.utils.book_append_sheet(wb,ws3,"Monthly Summary");
- XLSX.writeFile(wb,`MEDCY_Daily_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+ XLSX.writeFile(wb,`${(<?= json_encode(COMPANY_NAME) ?>).replace(/[^\w\u0900-\u0D7F -]/g,'').trim().replace(/\s+/g,'_')}_Daily_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
  toast('Excel report downloaded \u2713');
 }
 
