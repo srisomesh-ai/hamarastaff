@@ -124,15 +124,19 @@ foreach (glob("$CLIENTS/*.php") as $file) {
   $ends  = cfgval($cfg, 'TRIAL_ENDS');
   if (!$email || !$ends) continue;
   $name  = cfgval($cfg, 'COMPANY_NAME') ?: strtoupper($code);
-  $stage = 1;
+  $stage = 0;   /* unknown history = nothing confirmed sent */
   if (preg_match("/define\('DRIP_STAGE',\s*(\d+)\);/", $cfg, $m)) $stage = (int)$m[1];
   if ($stage >= 10) continue;
 
   $signup = strtotime($ends . ' -7 days');
   $day = (int)floor((strtotime(date('Y-m-d')) - $signup) / 86400);
 
-  $next = $stage + 1;
-  if (!isset($DUE[$next]) || $day < $DUE[$next]) continue;   /* not due yet */
+  /* current-timeline only: pick the email matching TODAY's position;
+     anything older that was missed is skipped, never backfilled */
+  $target = 0;
+  foreach ($DUE as $n => $d) { if ($day >= $d) $target = max($target, $n); }
+  if ($target <= $stage) continue;                            /* nothing new due */
+  $next = $target;
 
   $CODE = strtoupper($code);
   $e = drip_email($next, htmlspecialchars($name), $CODE, $code, $ends);
