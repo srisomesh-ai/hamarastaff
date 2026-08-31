@@ -307,5 +307,23 @@ case 'remove': {
   out(true);   /* database tables kept for audit */
 }
 
+case 'wipe': {
+  requireSuper();
+  $code=strtolower(trim($in['code']??''));
+  if(!preg_match('/^[a-z0-9][a-z0-9-]{1,19}$/',$code)) fail('Bad code');
+  if(($in['confirm']??'')!=='WIPE '.strtoupper($code)) fail('Type exactly: WIPE '.strtoupper($code));
+  $existed=file_exists("$CLIENTS/$code.php");
+  /* drop every tenant table */
+  $pdo=new PDO('mysql:host='.DB_HOST.';dbname='.DB_NAME.';charset=utf8mb4',DB_USER,DB_PASS,[PDO::ATTR_ERRMODE=>PDO::ERRMODE_EXCEPTION]);
+  $dropped=0;
+  foreach($pdo->query("SHOW TABLES LIKE '".str_replace('_','\\_',$code)."\\_%'")->fetchAll(PDO::FETCH_COLUMN) as $tbl){
+    $pdo->exec("DROP TABLE IF EXISTS `$tbl`"); $dropped++;
+  }
+  /* remove portal files */
+  if($existed) @unlink("$CLIENTS/$code.php");
+  if(file_exists("$CLIENTS/$code-logo.png")) @unlink("$CLIENTS/$code-logo.png");
+  out(['tables_dropped'=>$dropped,'portal_removed'=>$existed]);
+}
+
 default: fail('unknown_action');
 }

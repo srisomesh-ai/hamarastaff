@@ -295,8 +295,23 @@ function openDelete(code){
   <p style="font-size:13.5px;color:var(--sub);margin-top:8px;line-height:1.6">This removes the client's portal pages from the website. Their database records (attendance, visits, audit log) are <b>kept</b> for audit purposes.</p>
   <label>Type the code <b style="color:var(--red)">${code}</b> to confirm</label>
   <input id="dConfirm" placeholder="${code}" style="font-family:'Space Grotesk'">
-  <button class="btn danger" style="width:100%;margin-top:20px;background:var(--red);color:#fff;border:none" onclick="doDelete('${code}')">Delete Portal Permanently</button>`;
+  <button class="btn danger" style="width:100%;margin-top:20px;background:var(--red);color:#fff;border:none" onclick="doDelete('${code}')">Delete Portal (keep data)</button>
+  <div style="border-top:1.5px dashed var(--line);margin:22px 0 14px"></div>
+  <h3 style="color:#7A1B14;font-size:15px">☠️ Wipe Out Completely</h3>
+  <p style="font-size:13px;color:var(--sub);margin-top:6px;line-height:1.6">Deletes the portal <b>AND permanently destroys all data</b> — employees, attendance, visits, reports, audit log, device tokens. Cannot be undone. Use for trials that didn't convert or on a client's data-deletion request. <b>Download a Backup first if in doubt.</b></p>
+  <label>Type <b style="color:#7A1B14">WIPE ${code.toUpperCase()}</b> to confirm</label>
+  <input id="wConfirm" placeholder="WIPE ${code.toUpperCase()}" style="font-family:'Space Grotesk'">
+  <button class="btn danger" style="width:100%;margin-top:14px;background:#7A1B14;color:#fff;border:none" onclick="doWipe('${code}')">☠️ Wipe Out — Delete Everything</button>`;
  $('overlay').classList.add('show');
+}
+async function doWipe(code){
+ const c=$('wConfirm').value.trim();
+ if(c!=='WIPE '+code.toUpperCase()){toast('Type exactly: WIPE '+code.toUpperCase());return}
+ if(!confirm('FINAL WARNING: all data for '+code.toUpperCase()+' will be destroyed permanently. Continue?'))return;
+ try{
+  const r=await api('wipe',{code,confirm:c});
+  closeModal();toast(code.toUpperCase()+' wiped — '+r.tables_dropped+' tables destroyed');loadClients();
+ }catch(e){toast(e.message)}
 }
 async function doDelete(code){
  try{
